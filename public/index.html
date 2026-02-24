@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Real Tasseography</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: #0d0d0d;
+      color: #d4af37;
+      font-family: sans-serif;
+    }
+
+    canvas {
+      display: block;
+    }
+
+    #ui {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      pointer-events: none;
+      text-align: center;
+    }
+
+    button {
+      pointer-events: auto;
+      padding: 15px 30px;
+      font-size: 1.2rem;
+      background: #d4af37;
+      border: none;
+      border-radius: 30px;
+      color: #000;
+      cursor: pointer;
+    }
+
+    #prediction-box {
+      display: none;
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: rgba(0, 0, 0, 0.9);
+      padding: 20px;
+      box-sizing: border-box;
+      border-top: 2px solid #d4af37;
+      min-height: 30vh;
+    }
+  </style>
+</head>
+
+<body>
+
+  <canvas id="canvas"></canvas>
+
+  <div id="ui">
+    <h1 id="status">PRESS START</h1>
+    <button id="btn">Start Ritual</button>
+  </div>
+
+  <div id="prediction-box">
+    <h3 style="margin-top:0;">คำทำนาย</h3>
+    <p id="result-text">กำลังเพ่งกระแสจิต...</p>
+    <button onclick="location.reload()" style="margin-top:10px; padding: 8px 15px; font-size: 1rem;">เล่นใหม่</button>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const uiStatus = document.getElementById('status');
+    const btn = document.getElementById('btn');
+
+    // ตั้งค่า Canvas
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    // --- PHYSICS VARIABLES ---
+    let particles = [];
+    const NUM_PARTICLES = 600;
+    const CUP_RADIUS = Math.min(canvas.width, canvas.height) * 0.4;
+    const CENTER_X = canvas.width / 2;
+    const CENTER_Y = canvas.height / 2;
+
+    // Sensor values
+    let accX = 0, accY = 0; // แรงเหวี่ยง
+    let tiltX = 0, tiltY = 0; // แรงโน้มถ่วง (เอียง)
+
+    // State Machine
+    let state = 'IDLE'; // IDLE -> BREWING -> REVEAL
+
+    class TeaLeaf {
+      constructor() {
+        // สุ่มตำแหน่งเริ่มต้นให้อยู่ในแก้ว
+        const angle = Math.random() * Math.PI * 2;
+        const r = Math.sqrt(Math.random()) * CUP_RADIUS; // Uniform distribution
+        this.x = CENTER_X + r * Math.cos(angle);
+        this.y = CENTER_Y + r * Math.sin(angle);
+
+        // Physics Properties
+        this.vx = 0;
+        this.vy = 0;
+        this.mass = 1 + Math.random() * 2; // ใบใหญ่จะหนักกว่า ขยับยากกว่า
+        this.friction = 0.95; // แรงต้านน้ำ
+
+        // Appearance
+        this.size = this.mass * 1.5;
+        this.rotation = Math.random() * Math.PI;
+        // สีใบชา: น้ำตาลเข้ม ไล่ไปดำ
+        const darkness = Math.random() * 50;
+        this.color = `rgba(${50 - darkness}, ${30 - darkness / 2}, 0, 0.8)`;
+      }
+
+      update() {
+        if (state === 'REVEAL') return; // หยุดนิ่งตอนทำนาย
+
+        // 1. รับแรงจากการเขย่า (Inertia)
+        // ถ้าสะบัดมือไปขวา (accX เป็น +) น้ำจะกระฉอกไปซ้าย (vx เป็น -)
+        // หารด้วย mass เพราะวัตถุใหญ่เปลี่ยนความเร็วยากกว่า (F=ma)
+        this.vx -= (accX * 0.8) / this.mass;
+        this.vy -= (accY * 0.8) / this.mass;
+
+        // 2. รับแรงจากการเอียง (Gravity) - ไหลลงตามแรงโน้มถ่วง
+        // tiltX/Y มาจาก deviceorientation
+        this.vx += tiltX * 0.05;
+        this.vy += tiltY * 0.05;
+
+        // 3. Apply Velocity & Friction
+        this.vx *= this.friction;
+        this.vy *= this.friction;
+        this.x += this.vx;
+        this.y += this.vy;
+
+        // 4. Boundary Constraint (ขอบแก้ว)
+        // คำนวณระยะห่างจากจุดศูนย์กลาง
+        const dx = this.x - CENTER_X;
+        const dy = this.y - CENTER_Y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+
+        if (dist > CUP_RADIUS) {
+          // ถ้าชนขอบแก้ว ให้เด้งกลับ (Elastic Collision)
+          const angle = Math.atan2(dy, dx);
+          const targetX = CENTER_X + Math.cos(angle) * CUP_RADIUS;
+          const targetY = CENTER_Y + Math.sin(angle) * CUP_RADIUS;
+
+          this.x = targetX;
+          this.y = targetY;
+
+          // สะท้อนแรงกลับ
+          this.vx *= -0.5; // เสียพลังงานเมื่อชนขอบ
+          this.vy *= -0.5;
+        }
+      }
+
+      draw() {
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.rotate(this.rotation);
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        // วาดใบรูปร่างวงรีบิดๆ
+        ctx.ellipse(0, 0, this.size, this.size * 0.6, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+    }
+
+    // --- MAIN LOGIC ---
+
+    function init() {
+      particles = [];
+      for (let i = 0; i < NUM_PARTICLES; i++) particles.push(new TeaLeaf());
+      loop();
+    }
+
+    function loop() {
+      // Clear background
+      ctx.fillStyle = '#1a1510'; // สีก้นแก้ว
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // วาดขอบถ้วย
+      ctx.strokeStyle = '#d4af37';
+      ctx.lineWidth = 10;
+      ctx.beginPath();
+      ctx.arc(CENTER_X, CENTER_Y, CUP_RADIUS + 5, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // Update & Draw Particles
+      particles.forEach(p => {
+        p.update();
+        p.draw();
+      });
+
+      // Debug Text
+      // ctx.fillStyle = 'white';
+      // ctx.fillText(`Acc: ${accX.toFixed(2)}, ${accY.toFixed(2)}`, 10, 50);
+
+      requestAnimationFrame(loop);
+    }
+
+    // Event Handlers for Real Sensors
+    function handleMotion(event) {
+      // accelerationIncludingGravity รวมแรงโน้มถ่วงโลก
+      // acceleration คือแรงเหวี่ยงเพียวๆ (บางเครื่องอาจเป็น null ต้อง fallback)
+      const acc = event.acceleration || event.accelerationIncludingGravity;
+      if (acc) {
+        // ปรับ Sensitivity ตามต้องการ
+        accX = acc.x || 0;
+        accY = acc.y || 0;
+
+        // ถ้าเป็น accelerationIncludingGravity ต้องลบ Gravity ออก (คร่าวๆ)
+        if (!event.acceleration) {
+          // Simple high-pass filter logic could go here, but raw is okay for chaos
+        }
+      }
+    }
+
+    function handleOrientation(event) {
+      // beta: หน้า-หลัง (-180, 180)
+      // gamma: ซ้าย-ขวา (-90, 90)
+      tiltX = event.gamma || 0;
+      tiltY = event.beta || 0;
+    }
+
+    // Start Button
+    btn.addEventListener('click', async () => {
+      // iOS 13+ Permission Request
+      if (typeof DeviceMotionEvent.requestPermission === 'function') {
+        const response = await DeviceMotionEvent.requestPermission();
+        if (response !== 'granted') return alert('Need sensor access!');
+      }
+
+      window.addEventListener('devicemotion', handleMotion);
+      window.addEventListener('deviceorientation', handleOrientation);
+
+      state = 'BREWING';
+      uiStatus.innerText = "SHAKE THE CUP!";
+      btn.style.display = 'none';
+
+      // ตั้งเวลาให้เล่น 5 วินาที แล้วหยุดเพื่อดูผล
+      setTimeout(reveal, 6000);
+      init();
+    });
+
+    async function reveal() {
+      state = 'REVEAL'; // Freeze particles
+      uiStatus.style.display = 'none'; // Hide UI text
+
+      // หยุดรับ Sensor เพื่อประหยัดแบต
+      window.removeEventListener('devicemotion', handleMotion);
+
+      document.getElementById('prediction-box').style.display = 'block';
+
+      // ส่งภาพไป Backend
+      const dataURL = canvas.toDataURL('image/jpeg', 0.8);
+      const base64 = dataURL.split(',')[1];
+
+      try {
+        const res = await fetch('/api/predict', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ imageBase64: base64 })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          document.getElementById('result-text').innerText = data.prediction;
+        } else {
+          document.getElementById('result-text').innerText = "มองไม่ชัด... ลองใหม่อีกครั้ง";
+        }
+      } catch (e) {
+        document.getElementById('result-text').innerText = "Error Connecting to Spirit World (Server).";
+      }
+    }
+
+  </script>
+</body>
+
+</html>
