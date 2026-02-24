@@ -154,7 +154,7 @@
 
     // --- PHYSICS CONFIG ---
     let particles = [];
-    const NUM_PARTICLES = 800; // จำนวนใบชาเยอะขึ้นเพื่อความสมจริง
+    const NUM_PARTICLES = 800;
     const CUP_RADIUS = Math.min(canvas.width, canvas.height) * 0.42;
     const CENTER_X = canvas.width / 2;
     const CENTER_Y = canvas.height / 2;
@@ -165,40 +165,34 @@
 
     class TeaLeaf {
       constructor(type) {
-        // Setup Position
         const angle = Math.random() * Math.PI * 2;
         const r = Math.sqrt(Math.random()) * CUP_RADIUS;
         this.x = CENTER_X + r * Math.cos(angle);
         this.y = CENTER_Y + r * Math.sin(angle);
 
-        // Physics
-        this.type = type; // 'DUST' (ผงเล็กๆ) หรือ 'LEAF' (ใบใหญ่)
+        this.type = type;
         this.vx = 0;
         this.vy = 0;
         this.mass = (type === 'LEAF') ? (1.5 + Math.random() * 2) : (0.5 + Math.random() * 0.5);
-        this.friction = 0.92; // ความหนืดของน้ำ
+        // ลด Friction ปกติลงเพื่อให้ไหลลื่นตอนเขย่า
+        this.friction = 0.94;
 
-        // Visual Properties (Organic Shape Generation)
         this.rotation = Math.random() * Math.PI * 2;
-        this.rotationSpeed = (Math.random() - 0.5) * 0.1;
+        this.rotationSpeed = 0;
 
-        // สี: น้ำตาลไหม้ ดำอมแดง
         const shade = Math.random();
         if (shade > 0.7) {
-          this.color = `rgba(40, 30, 20, ${0.8 + Math.random() * 0.2})`; // น้ำตาลอ่อน
+          this.color = `rgba(40, 30, 20, ${0.8 + Math.random() * 0.2})`;
         } else {
-          this.color = `rgba(20, 10, 5, ${0.9 + Math.random() * 0.1})`; // เกือบดำ
+          this.color = `rgba(20, 10, 5, ${0.9 + Math.random() * 0.1})`;
         }
 
-        // สร้างรูปทรงใบชา (Polygon Vertices)
         this.vertices = [];
         if (this.type === 'LEAF') {
-          this.size = this.mass * 5; // ใหญ่ขึ้น
-          // สร้างใบชาเบี้ยวๆ 5-8 เหลี่ยม
+          this.size = this.mass * 5;
           const points = 5 + Math.floor(Math.random() * 4);
           for (let i = 0; i < points; i++) {
             const theta = (i / points) * Math.PI * 2;
-            // รัศมีสุ่มๆ เพื่อให้ขอบขรุขระ (Jagged edges)
             const rad = this.size * (0.6 + Math.random() * 0.6);
             this.vertices.push({
               x: Math.cos(theta) * rad,
@@ -206,8 +200,7 @@
             });
           }
         } else {
-          this.size = this.mass * 3; // ผงเล็ก
-          // ผงเป็นก้อนเล็กๆ
+          this.size = this.mass * 3;
           const points = 3 + Math.floor(Math.random() * 3);
           for (let i = 0; i < points; i++) {
             const theta = (i / points) * Math.PI * 2;
@@ -220,23 +213,32 @@
         }
       }
 
-      update() {
+      update(inputLow) {
         if (state === 'REVEAL') return;
 
-        // Physics Logic
+        // --- 1. ระบบเบรกอัตโนมัติ (Smart Braking) ---
+        // ถ้าคนหยุดเขย่า (Input ต่ำ) ให้เพิ่มแรงเสียดทานทันที
+        let currentFriction = this.friction;
+        if (inputLow) {
+          currentFriction = 0.85; // เบรกหัวทิ่ม (0.85 จะหยุดไวกว่า 0.94 มาก)
+        }
+
         this.vx -= (accX * 0.9) / this.mass;
         this.vy -= (accY * 0.9) / this.mass;
         this.vx += tiltX * 0.05;
         this.vy += tiltY * 0.05;
-        this.vx *= this.friction;
-        this.vy *= this.friction;
+
+        this.vx *= currentFriction;
+        this.vy *= currentFriction;
+
         this.x += this.vx;
         this.y += this.vy;
 
-        // หมุนตามแรงเหวี่ยง
-        this.rotation += this.rotationSpeed + (Math.abs(this.vx) + Math.abs(this.vy)) * 0.05;
+        // หมุน: ถ้าหยุดเขย่า ให้หยุดหมุนเร็วขึ้น
+        this.rotationSpeed += (Math.abs(this.vx) + Math.abs(this.vy)) * 0.01;
+        this.rotationSpeed *= currentFriction;
+        this.rotation += this.rotationSpeed;
 
-        // Boundary Check
         const dx = this.x - CENTER_X;
         const dy = this.y - CENTER_Y;
         const dist = Math.sqrt(dx * dx + dy * dy);
@@ -245,7 +247,7 @@
           const angle = Math.atan2(dy, dx);
           this.x = CENTER_X + Math.cos(angle) * CUP_RADIUS;
           this.y = CENTER_Y + Math.sin(angle) * CUP_RADIUS;
-          this.vx *= -0.3; // ชนขอบแล้วหยุดเร็วขึ้น
+          this.vx *= -0.3;
           this.vy *= -0.3;
         }
       }
@@ -254,20 +256,14 @@
         ctx.save();
         ctx.translate(this.x, this.y);
         ctx.rotate(this.rotation);
-
         ctx.fillStyle = this.color;
         ctx.beginPath();
-
-        // วาดตามจุด Vertex ที่สุ่มไว้
         ctx.moveTo(this.vertices[0].x, this.vertices[0].y);
         for (let i = 1; i < this.vertices.length; i++) {
           ctx.lineTo(this.vertices[i].x, this.vertices[i].y);
         }
-
         ctx.closePath();
         ctx.fill();
-
-        // เพิ่มรายละเอียด: เส้นแกนกลางใบ (เฉพาะใบใหญ่)
         if (this.type === 'LEAF' && Math.random() > 0.5) {
           ctx.strokeStyle = "rgba(0,0,0,0.3)";
           ctx.lineWidth = 1;
@@ -276,7 +272,6 @@
           ctx.lineTo(this.vertices[0].x * 0.6, this.vertices[0].y * 0.6);
           ctx.stroke();
         }
-
         ctx.restore();
       }
     }
@@ -287,73 +282,87 @@
     function checkSettled() {
       if (state !== 'BREWING') return;
 
+      // 1. เช็คแรงจากมือคน (Input Force)
+      // ถ้า accX, accY น้อยกว่า 1.5 ถือว่าคนหยุดเขย่าแล้ว (ยอมให้มือสั่นได้นิดหน่อย)
+      const inputForce = Math.abs(accX) + Math.abs(accY);
+      const isInputLow = inputForce < 2.5; // เพิ่ม Threshold ให้กว้างขึ้น (เดิม 0 หรือ 1)
+
+      // 2. เช็คความเร็วเฉลี่ยของใบชา (Average Velocity)
       let totalVelocity = 0;
-      // สุ่มเช็คแค่บางส่วนเพื่อประหยัด Performance
+      let sampleCount = 0;
+      // สุ่มเช็คทุกๆ 5 ตัว เพื่อความเร็ว
       for (let i = 0; i < particles.length; i += 5) {
         totalVelocity += Math.abs(particles[i].vx) + Math.abs(particles[i].vy);
+        sampleCount++;
       }
+      const avgVelocity = totalVelocity / sampleCount;
 
-      // ถ้าใบชาหยุดนิ่ง
-      if (totalVelocity < 0.5) {
+      // เงื่อนไข: ถ้าคนหยุดเขย่า (Input Low) และใบชาเริ่มช้าลง (Avg < 1.0)
+      // ค่า 1.0 นี่คือใบชายังขยับดุ๊กดิ๊กได้นิดหน่อย ไม่ต้องนิ่งสนิท
+      if (isInputLow && avgVelocity < 1.0) {
         stillFrames++;
       } else {
         stillFrames = 0;
-        revealBtn.style.display = 'none';
-        uiStatus.innerText = "SHAKE IT!";
-        uiSubText.style.display = 'none';
+        // ซ่อนปุ่มถ้ากลับมาเขย่าแรงๆ
+        if (avgVelocity > 2.0) {
+          revealBtn.style.display = 'none';
+          uiStatus.innerText = "SHAKE IT!";
+          uiSubText.style.display = 'none';
+        }
       }
 
-      if (stillFrames > 40) { // นิ่งประมาณ 0.8 วิ
+      // ลดเวลาการรอลง (30 เฟรม = 0.5 วินาที)
+      if (stillFrames > 30) {
         revealBtn.style.display = 'block';
         uiStatus.innerText = "DESTINY AWAITS";
       }
+
+      return isInputLow; // ส่งค่ากลับไปบอก update() ว่าควรเบรกไหม
     }
 
     function loop() {
+      // เช็คสถานะความนิ่งก่อน
+      const isInputLow = checkSettled();
+
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // 1. วาดก้นถ้วย (Ceramic Look)
       ctx.save();
       ctx.beginPath();
       ctx.arc(CENTER_X, CENTER_Y, CUP_RADIUS, 0, Math.PI * 2);
 
       let cupGradient = ctx.createRadialGradient(CENTER_X, CENTER_Y, CUP_RADIUS * 0.1, CENTER_X, CENTER_Y, CUP_RADIUS);
-      cupGradient.addColorStop(0, '#fdfcf0'); // ขาวนวลตรงกลาง
-      cupGradient.addColorStop(0.8, '#efe6d5'); // ครีม
-      cupGradient.addColorStop(1, '#d0c0a0'); // เงาขอบ
+      cupGradient.addColorStop(0, '#fdfcf0');
+      cupGradient.addColorStop(0.8, '#efe6d5');
+      cupGradient.addColorStop(1, '#d0c0a0');
       ctx.fillStyle = cupGradient;
       ctx.fill();
-      ctx.clip(); // ตัดขอบ
+      ctx.clip();
 
-      // 2. วาดใบชา
       particles.forEach(p => {
-        p.update();
+        // ส่งค่า isInputLow ไปบอกใบชาว่า "เฮ้ย เจ้านายหยุดเขย่าแล้ว เบรกด่วน!"
+        p.update(isInputLow);
         p.draw();
       });
 
       ctx.restore();
 
-      // 3. วาดขอบถ้วยทองคำ
       ctx.strokeStyle = '#d4af37';
       ctx.lineWidth = 14;
       ctx.beginPath();
       ctx.arc(CENTER_X, CENTER_Y, CUP_RADIUS, 0, Math.PI * 2);
       ctx.stroke();
 
-      // เงาในถ้วย
       ctx.strokeStyle = 'rgba(50,30,10,0.15)';
       ctx.lineWidth = 4;
       ctx.beginPath();
       ctx.arc(CENTER_X, CENTER_Y, CUP_RADIUS - 7, 0, Math.PI * 2);
       ctx.stroke();
 
-      checkSettled();
       requestAnimationFrame(loop);
     }
 
     function init() {
       particles = [];
-      // สร้างใบชาผสมกัน (ใบใหญ่ 40% / ผง 60%)
       for (let i = 0; i < NUM_PARTICLES; i++) {
         const type = (Math.random() > 0.6) ? 'LEAF' : 'DUST';
         particles.push(new TeaLeaf(type));
@@ -361,10 +370,15 @@
       loop();
     }
 
-    // --- EVENTS ---
     function handleMotion(event) {
       const acc = event.acceleration || event.accelerationIncludingGravity;
-      if (acc) { accX = acc.x || 0; accY = acc.y || 0; }
+      if (acc) {
+        // ใส่ Deadzone นิดหน่อย: ถ้าขยับน้อยมากๆ ให้ตีเป็น 0 ไปเลย ลด Noise
+        let rawX = acc.x || 0;
+        let rawY = acc.y || 0;
+        accX = (Math.abs(rawX) < 0.5) ? 0 : rawX;
+        accY = (Math.abs(rawY) < 0.5) ? 0 : rawY;
+      }
     }
     function handleOrientation(event) {
       tiltX = event.gamma || 0; tiltY = event.beta || 0;
@@ -391,19 +405,16 @@
       document.getElementById('prediction-box').style.display = 'block';
       document.getElementById('result-text').innerText = "Reading the signs... (Wait approx 10-20s)";
 
-      // Resize Logic for Speed
       const tempCanvas = document.createElement('canvas');
       const tempCtx = tempCanvas.getContext('2d');
       const targetSize = 512;
       tempCanvas.width = targetSize;
       tempCanvas.height = targetSize;
-      // วาดพื้นหลังสีขาวลงไปก่อน กันรูปโปร่งใสแล้ว AI งง
       tempCtx.fillStyle = "#ffffff";
       tempCtx.fillRect(0, 0, targetSize, targetSize);
       tempCtx.drawImage(canvas, 0, 0, targetSize, targetSize);
       const base64 = tempCanvas.toDataURL('image/jpeg', 0.6).split(',')[1];
 
-      // Timeout 60s
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 60000);
 
