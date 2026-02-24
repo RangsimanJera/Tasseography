@@ -4,21 +4,20 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Real Tasseography (Redesigned)</title>
+  <title>Tasseography</title>
   <style>
     body {
       margin: 0;
       overflow: hidden;
-      /* พื้นหลังข้างนอกถ้วย: ไล่สีเข้มดูลึกลับ */
-      background: radial-gradient(circle at center, #2e1e3b 0%, #0a0510 100%);
+      background: radial-gradient(circle at center, #1a0b2e 0%, #000000 100%);
       color: #d4af37;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      touch-action: none;
     }
 
     canvas {
       display: block;
-      /* เพิ่มเงาให้ตัวถ้วยดูลอยออกมา */
-      filter: drop-shadow(0 0 20px rgba(212, 175, 55, 0.3));
+      filter: drop-shadow(0 0 30px rgba(212, 175, 55, 0.15));
     }
 
     #ui {
@@ -34,35 +33,69 @@
       pointer-events: none;
       text-align: center;
       text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+      z-index: 10;
     }
 
     h1 {
-      letter-spacing: 3px;
+      letter-spacing: 4px;
       margin-bottom: 10px;
+      font-weight: 600;
+      color: #f9d976;
+      text-transform: uppercase;
     }
 
     p.sub-text {
-      font-size: 1.1rem;
-      color: #e0d0a8;
+      font-size: 1rem;
+      color: #a8a0b0;
       margin-bottom: 30px;
+      letter-spacing: 1px;
     }
 
-    button {
+    .action-btn {
       pointer-events: auto;
-      padding: 18px 40px;
-      font-size: 1.2rem;
-      background: linear-gradient(45deg, #d4af37, #f9d976);
-      border: none;
+      padding: 16px 36px;
+      font-size: 1.1rem;
+      background: rgba(212, 175, 55, 0.1);
+      border: 1px solid #d4af37;
       border-radius: 50px;
-      color: #2e1e3b;
-      font-weight: bold;
+      color: #d4af37;
+      font-weight: 600;
       cursor: pointer;
-      box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);
-      transition: transform 0.2s;
+      backdrop-filter: blur(5px);
+      transition: all 0.3s;
+      text-transform: uppercase;
+      letter-spacing: 2px;
     }
 
-    button:active {
-      transform: scale(0.95);
+    .action-btn:active {
+      background: #d4af37;
+      color: #000;
+      transform: scale(0.96);
+    }
+
+    #reveal-btn {
+      display: none;
+      background: #d4af37;
+      color: #1a0b2e;
+      box-shadow: 0 0 25px rgba(212, 175, 55, 0.4);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.7);
+      }
+
+      70% {
+        transform: scale(1.05);
+        box-shadow: 0 0 0 15px rgba(212, 175, 55, 0);
+      }
+
+      100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(212, 175, 55, 0);
+      }
     }
 
     #prediction-box {
@@ -71,12 +104,14 @@
       bottom: 0;
       left: 0;
       width: 100%;
-      background: rgba(15, 10, 20, 0.95);
-      padding: 25px;
+      background: rgba(10, 5, 15, 0.95);
+      padding: 30px 20px;
       box-sizing: border-box;
-      border-top: 3px solid #d4af37;
-      min-height: 30vh;
-      box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.5);
+      border-top: 2px solid #d4af37;
+      min-height: 40vh;
+      box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.8);
+      z-index: 100;
+      border-radius: 20px 20px 0 0;
     }
   </style>
 </head>
@@ -87,29 +122,39 @@
 
   <div id="ui">
     <h1 id="status-text">TASSEOGRAPHY</h1>
-    <p id="instruction-text" class="sub-text">ตั้งจิตอธิษฐาน แล้วเริ่มพิธีกรรม</p>
-    <button id="btn">Start Ritual</button>
+    <p id="instruction-text" class="sub-text">Focus your intent. Begin the ritual.</p>
+    <button id="start-btn" class="action-btn">Start Ritual</button>
+    <button id="reveal-btn" class="action-btn">Read My Fortune</button>
   </div>
 
   <div id="prediction-box">
-    <h3 style="margin-top:0; color:#f9d976;">คำทำนายจากก้นแก้ว</h3>
-    <p id="result-text" style="color: #e0d0a8; line-height: 1.6;">กำลังเชื่อมต่อกับจักรวาล...</p>
-    <button onclick="location.reload()" style="margin-top:15px; padding: 10px 25px; font-size: 1rem;">เล่นใหม่</button>
+    <h3 style="margin-top:0; color:#d4af37; text-align:center; text-transform:uppercase; letter-spacing:2px;">The Oracle
+      Speaks</h3>
+    <div style="width: 50px; height: 1px; background: #d4af37; margin: 10px auto 20px;"></div>
+    <p id="result-text" style="color: #e0d0a8; line-height: 1.8; text-align: center; font-size: 1.1rem;">Waiting for the
+      spirits...</p>
+    <div style="text-align: center; margin-top: 30px;">
+      <button onclick="location.reload()"
+        style="padding: 10px 30px; font-size: 0.9rem; background: transparent; border: 1px solid #666; color: #888; border-radius: 30px; cursor: pointer;">Play
+        Again</button>
+    </div>
   </div>
 
   <script>
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
+
     const uiStatus = document.getElementById('status-text');
     const uiSubText = document.getElementById('instruction-text');
-    const btn = document.getElementById('btn');
+    const startBtn = document.getElementById('start-btn');
+    const revealBtn = document.getElementById('reveal-btn');
 
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
-    // --- PHYSICS VARIABLES ---
+    // --- PHYSICS CONFIG ---
     let particles = [];
-    const NUM_PARTICLES = 700; // เพิ่มจำนวนใบชาให้ดูเข้มข้นขึ้น
+    const NUM_PARTICLES = 800; // จำนวนใบชาเยอะขึ้นเพื่อความสมจริง
     const CUP_RADIUS = Math.min(canvas.width, canvas.height) * 0.42;
     const CENTER_X = canvas.width / 2;
     const CENTER_Y = canvas.height / 2;
@@ -119,30 +164,68 @@
     let state = 'IDLE';
 
     class TeaLeaf {
-      constructor() {
+      constructor(type) {
+        // Setup Position
         const angle = Math.random() * Math.PI * 2;
         const r = Math.sqrt(Math.random()) * CUP_RADIUS;
         this.x = CENTER_X + r * Math.cos(angle);
         this.y = CENTER_Y + r * Math.sin(angle);
 
-        this.vx = 0; this.vy = 0;
-        this.mass = 1 + Math.random() * 3;
-        this.friction = 0.94;
+        // Physics
+        this.type = type; // 'DUST' (ผงเล็กๆ) หรือ 'LEAF' (ใบใหญ่)
+        this.vx = 0;
+        this.vy = 0;
+        this.mass = (type === 'LEAF') ? (1.5 + Math.random() * 2) : (0.5 + Math.random() * 0.5);
+        this.friction = 0.92; // ความหนืดของน้ำ
 
-        this.size = this.mass * 1.8;
-        this.rotation = Math.random() * Math.PI;
+        // Visual Properties (Organic Shape Generation)
+        this.rotation = Math.random() * Math.PI * 2;
+        this.rotationSpeed = (Math.random() - 0.5) * 0.1;
 
-        // --- สีใบชา (ปรับใหม่) ---
-        // ให้เป็นสีน้ำตาลเข้มจัดๆ เกือบดำ เพื่อตัดกับพื้นหลังสีครีม
-        const darkness = Math.random() * 30;
-        // สีโทน Sepia เข้มๆ
-        this.color = `rgba(${40 - darkness}, ${25 - darkness * 0.5}, 5, 0.95)`;
+        // สี: น้ำตาลไหม้ ดำอมแดง
+        const shade = Math.random();
+        if (shade > 0.7) {
+          this.color = `rgba(40, 30, 20, ${0.8 + Math.random() * 0.2})`; // น้ำตาลอ่อน
+        } else {
+          this.color = `rgba(20, 10, 5, ${0.9 + Math.random() * 0.1})`; // เกือบดำ
+        }
+
+        // สร้างรูปทรงใบชา (Polygon Vertices)
+        this.vertices = [];
+        if (this.type === 'LEAF') {
+          this.size = this.mass * 5; // ใหญ่ขึ้น
+          // สร้างใบชาเบี้ยวๆ 5-8 เหลี่ยม
+          const points = 5 + Math.floor(Math.random() * 4);
+          for (let i = 0; i < points; i++) {
+            const theta = (i / points) * Math.PI * 2;
+            // รัศมีสุ่มๆ เพื่อให้ขอบขรุขระ (Jagged edges)
+            const rad = this.size * (0.6 + Math.random() * 0.6);
+            this.vertices.push({
+              x: Math.cos(theta) * rad,
+              y: Math.sin(theta) * rad
+            });
+          }
+        } else {
+          this.size = this.mass * 3; // ผงเล็ก
+          // ผงเป็นก้อนเล็กๆ
+          const points = 3 + Math.floor(Math.random() * 3);
+          for (let i = 0; i < points; i++) {
+            const theta = (i / points) * Math.PI * 2;
+            const rad = this.size * (0.8 + Math.random() * 0.4);
+            this.vertices.push({
+              x: Math.cos(theta) * rad,
+              y: Math.sin(theta) * rad
+            });
+          }
+        }
       }
 
       update() {
         if (state === 'REVEAL') return;
-        this.vx -= (accX * 0.8) / this.mass;
-        this.vy -= (accY * 0.8) / this.mass;
+
+        // Physics Logic
+        this.vx -= (accX * 0.9) / this.mass;
+        this.vy -= (accY * 0.9) / this.mass;
         this.vx += tiltX * 0.05;
         this.vy += tiltY * 0.05;
         this.vx *= this.friction;
@@ -150,6 +233,10 @@
         this.x += this.vx;
         this.y += this.vy;
 
+        // หมุนตามแรงเหวี่ยง
+        this.rotation += this.rotationSpeed + (Math.abs(this.vx) + Math.abs(this.vy)) * 0.05;
+
+        // Boundary Check
         const dx = this.x - CENTER_X;
         const dy = this.y - CENTER_Y;
         const dist = Math.sqrt(dx * dx + dy * dy);
@@ -158,8 +245,8 @@
           const angle = Math.atan2(dy, dx);
           this.x = CENTER_X + Math.cos(angle) * CUP_RADIUS;
           this.y = CENTER_Y + Math.sin(angle) * CUP_RADIUS;
-          this.vx *= -0.4;
-          this.vy *= -0.4;
+          this.vx *= -0.3; // ชนขอบแล้วหยุดเร็วขึ้น
+          this.vy *= -0.3;
         }
       }
 
@@ -167,121 +254,181 @@
         ctx.save();
         ctx.translate(this.x, this.y);
         ctx.rotate(this.rotation);
+
         ctx.fillStyle = this.color;
         ctx.beginPath();
-        // วาดใบรูปร่างซับซ้อนขึ้นนิดหน่อย
-        ctx.moveTo(0, -this.size / 2);
-        ctx.quadraticCurveTo(this.size / 2, 0, 0, this.size / 2);
-        ctx.quadraticCurveTo(-this.size / 2, 0, 0, -this.size / 2);
+
+        // วาดตามจุด Vertex ที่สุ่มไว้
+        ctx.moveTo(this.vertices[0].x, this.vertices[0].y);
+        for (let i = 1; i < this.vertices.length; i++) {
+          ctx.lineTo(this.vertices[i].x, this.vertices[i].y);
+        }
+
+        ctx.closePath();
         ctx.fill();
+
+        // เพิ่มรายละเอียด: เส้นแกนกลางใบ (เฉพาะใบใหญ่)
+        if (this.type === 'LEAF' && Math.random() > 0.5) {
+          ctx.strokeStyle = "rgba(0,0,0,0.3)";
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(0, 0);
+          ctx.lineTo(this.vertices[0].x * 0.6, this.vertices[0].y * 0.6);
+          ctx.stroke();
+        }
+
         ctx.restore();
       }
     }
 
-    // --- MAIN DRAW LOOP (ส่วนที่แก้ไขเยอะที่สุด) ---
+    // --- MAIN LOOP ---
+    let stillFrames = 0;
+
+    function checkSettled() {
+      if (state !== 'BREWING') return;
+
+      let totalVelocity = 0;
+      // สุ่มเช็คแค่บางส่วนเพื่อประหยัด Performance
+      for (let i = 0; i < particles.length; i += 5) {
+        totalVelocity += Math.abs(particles[i].vx) + Math.abs(particles[i].vy);
+      }
+
+      // ถ้าใบชาหยุดนิ่ง
+      if (totalVelocity < 0.5) {
+        stillFrames++;
+      } else {
+        stillFrames = 0;
+        revealBtn.style.display = 'none';
+        uiStatus.innerText = "SHAKE IT!";
+        uiSubText.style.display = 'none';
+      }
+
+      if (stillFrames > 40) { // นิ่งประมาณ 0.8 วิ
+        revealBtn.style.display = 'block';
+        uiStatus.innerText = "DESTINY AWAITS";
+      }
+    }
+
     function loop() {
-      // 1. ล้างหน้าจอ (พื้นที่รอบนอกถ้วย)
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // 2. วาด "ก้นถ้วย" (พื้นที่สีครีม)
-      ctx.save(); // บันทึกสถานะก่อน Clip
+      // 1. วาดก้นถ้วย (Ceramic Look)
+      ctx.save();
       ctx.beginPath();
       ctx.arc(CENTER_X, CENTER_Y, CUP_RADIUS, 0, Math.PI * 2);
 
-      // สร้าง Gradient ให้ก้นถ้วยดูมีมิติ (ครีมสว่าง -> ครีมเข้ม)
-      let cupGradient = ctx.createRadialGradient(CENTER_X, CENTER_Y, CUP_RADIUS * 0.2, CENTER_X, CENTER_Y, CUP_RADIUS);
-      cupGradient.addColorStop(0, '#fffbf0'); // ตรงกลางสว่าง (Off-white)
-      cupGradient.addColorStop(1, '#e0d0a8'); // ขอบๆ สีเข้มขึ้น (Antique cream)
+      let cupGradient = ctx.createRadialGradient(CENTER_X, CENTER_Y, CUP_RADIUS * 0.1, CENTER_X, CENTER_Y, CUP_RADIUS);
+      cupGradient.addColorStop(0, '#fdfcf0'); // ขาวนวลตรงกลาง
+      cupGradient.addColorStop(0.8, '#efe6d5'); // ครีม
+      cupGradient.addColorStop(1, '#d0c0a0'); // เงาขอบ
       ctx.fillStyle = cupGradient;
       ctx.fill();
+      ctx.clip(); // ตัดขอบ
 
-      // 3. Clip พื้นที่ (สำคัญ! เพื่อไม่ให้ใบชาหลุดออกนอกก้นแก้ว)
-      ctx.clip();
-
-      // 4. วาดใบชา (สีเข้ม) ลงบนพื้นหลังสีครีม
+      // 2. วาดใบชา
       particles.forEach(p => {
         p.update();
         p.draw();
       });
 
-      ctx.restore(); // ยกเลิก Clip
+      ctx.restore();
 
-      // 5. วาดขอบถ้วยสีทองทับด้านบนสุด
+      // 3. วาดขอบถ้วยทองคำ
       ctx.strokeStyle = '#d4af37';
-      ctx.lineWidth = 12;
+      ctx.lineWidth = 14;
       ctx.beginPath();
       ctx.arc(CENTER_X, CENTER_Y, CUP_RADIUS, 0, Math.PI * 2);
       ctx.stroke();
-      // เพิ่มขอบเงาด้านในเล็กน้อย
-      ctx.strokeStyle = 'rgba(0,0,0,0.2)';
-      ctx.lineWidth = 2;
+
+      // เงาในถ้วย
+      ctx.strokeStyle = 'rgba(50,30,10,0.15)';
+      ctx.lineWidth = 4;
       ctx.beginPath();
-      ctx.arc(CENTER_X, CENTER_Y, CUP_RADIUS - 6, 0, Math.PI * 2);
+      ctx.arc(CENTER_X, CENTER_Y, CUP_RADIUS - 7, 0, Math.PI * 2);
       ctx.stroke();
 
+      checkSettled();
       requestAnimationFrame(loop);
     }
 
-    // --- LOGIC เดิม ---
     function init() {
       particles = [];
-      for (let i = 0; i < NUM_PARTICLES; i++) particles.push(new TeaLeaf());
+      // สร้างใบชาผสมกัน (ใบใหญ่ 40% / ผง 60%)
+      for (let i = 0; i < NUM_PARTICLES; i++) {
+        const type = (Math.random() > 0.6) ? 'LEAF' : 'DUST';
+        particles.push(new TeaLeaf(type));
+      }
       loop();
     }
 
+    // --- EVENTS ---
     function handleMotion(event) {
       const acc = event.acceleration || event.accelerationIncludingGravity;
       if (acc) { accX = acc.x || 0; accY = acc.y || 0; }
     }
-
     function handleOrientation(event) {
       tiltX = event.gamma || 0; tiltY = event.beta || 0;
     }
 
-    btn.addEventListener('click', async () => {
+    startBtn.addEventListener('click', async () => {
       if (typeof DeviceMotionEvent.requestPermission === 'function') {
-        const response = await DeviceMotionEvent.requestPermission();
-        if (response !== 'granted') return alert('ต้องการสิทธิ์เข้าถึง Sensor');
+        try { await DeviceMotionEvent.requestPermission(); } catch (e) { }
       }
       window.addEventListener('devicemotion', handleMotion);
       window.addEventListener('deviceorientation', handleOrientation);
 
       state = 'BREWING';
       uiStatus.innerText = "SHAKE THE CUP!";
-      uiSubText.innerText = "เขย่ามือถือให้ทั่ว เพื่อกระจายใบชา";
-      btn.style.display = 'none';
-
-      setTimeout(reveal, 6000);
+      uiSubText.innerText = "Shake until the leaves settle.";
+      startBtn.style.display = 'none';
       init();
     });
 
-    async function reveal() {
+    revealBtn.addEventListener('click', async () => {
       state = 'REVEAL';
       document.getElementById('ui').style.display = 'none';
       window.removeEventListener('devicemotion', handleMotion);
       document.getElementById('prediction-box').style.display = 'block';
+      document.getElementById('result-text').innerText = "Reading the signs... (Wait approx 10-20s)";
 
-      // จับภาพเฉพาะส่วน Canvas ที่วาดไปส่งให้ AI
-      const dataURL = canvas.toDataURL('image/jpeg', 0.8);
-      const base64 = dataURL.split(',')[1];
+      // Resize Logic for Speed
+      const tempCanvas = document.createElement('canvas');
+      const tempCtx = tempCanvas.getContext('2d');
+      const targetSize = 512;
+      tempCanvas.width = targetSize;
+      tempCanvas.height = targetSize;
+      // วาดพื้นหลังสีขาวลงไปก่อน กันรูปโปร่งใสแล้ว AI งง
+      tempCtx.fillStyle = "#ffffff";
+      tempCtx.fillRect(0, 0, targetSize, targetSize);
+      tempCtx.drawImage(canvas, 0, 0, targetSize, targetSize);
+      const base64 = tempCanvas.toDataURL('image/jpeg', 0.6).split(',')[1];
+
+      // Timeout 60s
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 60000);
 
       try {
-        // แก้ Path ให้เรียกไปที่ /api/predict (เผื่อกรณี Vercel)
         const res = await fetch('/api/predict', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ imageBase64: base64 })
+          body: JSON.stringify({ imageBase64: base64 }),
+          signal: controller.signal
         });
+        clearTimeout(timeoutId);
+
         const data = await res.json();
         if (data.success) {
           document.getElementById('result-text').innerText = data.prediction;
         } else {
-          document.getElementById('result-text').innerText = "มองไม่ชัด... ลองใหม่อีกครั้ง";
+          throw new Error(data.error || "Unknown error");
         }
       } catch (e) {
-        document.getElementById('result-text').innerText = "Error Connecting to Spirit World.";
+        console.error(e);
+        let msg = "The connection to the spirit world was lost.";
+        if (e.name === 'AbortError') msg = "The spirits are taking too long (Timeout).";
+        document.getElementById('result-text').innerText = msg + " Please try again.";
       }
-    }
+    });
   </script>
 </body>
 
