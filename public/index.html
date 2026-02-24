@@ -86,8 +86,8 @@
   <canvas id="canvas"></canvas>
 
   <div id="ui">
-    <h1>TASSEOGRAPHY</h1>
-    <p class="sub-text">ตั้งจิตอธิษฐาน แล้วเริ่มพิธีกรรม</p>
+    <h1 id="status-text">TASSEOGRAPHY</h1>
+    <p id="instruction-text" class="sub-text">ตั้งจิตอธิษฐาน แล้วเริ่มพิธีกรรม</p>
     <button id="btn">Start Ritual</button>
   </div>
 
@@ -100,8 +100,8 @@
   <script>
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
-    const uiStatus = document.getElementById('ui h1');
-    const uiSubText = document.getElementById('ui .sub-text');
+    const uiStatus = document.getElementById('status-text');
+    const uiSubText = document.getElementById('instruction-text');
     const btn = document.getElementById('btn');
 
     canvas.width = window.innerWidth;
