@@ -4,164 +4,316 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Tasseography</title>
+  <title>Tasseography: The Ritual</title>
   <style>
     body {
       margin: 0;
       overflow: hidden;
       background: radial-gradient(circle at center, #1a0b2e 0%, #000000 100%);
       color: #d4af37;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-family: 'Segoe UI', serif;
       touch-action: none;
+      user-select: none;
+      -webkit-user-select: none;
     }
 
+    /* เพิ่ม Transition ให้ Canvas เลื่อนนุ่มๆ */
     canvas {
       display: block;
       filter: drop-shadow(0 0 30px rgba(212, 175, 55, 0.15));
+      transition: transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+      /* Ease-out นุ่มๆ */
     }
 
-    #ui {
+    /* Class สำหรับเลื่อน Canvas ขึ้น */
+    .canvas-reveal {
+      transform: translateY(-25%);
+      /* เลื่อนขึ้น 25% ของจอ */
+    }
+
+    /* UI Container */
+    #ui-layer {
       position: absolute;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
+      pointer-events: none;
+      z-index: 10;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      pointer-events: none;
       text-align: center;
-      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
-      z-index: 10;
+      transition: opacity 0.5s;
     }
 
-    h1 {
-      letter-spacing: 4px;
-      margin-bottom: 10px;
-      font-weight: 600;
-      color: #f9d976;
-      text-transform: uppercase;
-    }
-
-    p.sub-text {
-      font-size: 1rem;
-      color: #a8a0b0;
-      margin-bottom: 30px;
-      letter-spacing: 1px;
-    }
-
-    .action-btn {
+    /* SCREEN: SELECT */
+    #screen-select {
       pointer-events: auto;
-      padding: 16px 36px;
-      font-size: 1.1rem;
-      background: rgba(212, 175, 55, 0.1);
+      background: rgba(0, 0, 0, 0.8);
+      padding: 40px;
+      border-radius: 20px;
       border: 1px solid #d4af37;
-      border-radius: 50px;
-      color: #d4af37;
-      font-weight: 600;
-      cursor: pointer;
-      backdrop-filter: blur(5px);
-      transition: all 0.3s;
-      text-transform: uppercase;
-      letter-spacing: 2px;
     }
 
-    .action-btn:active {
+    .choice-btn {
+      display: block;
+      width: 200px;
+      margin: 10px auto;
+      padding: 15px;
+      background: transparent;
+      border: 1px solid #d4af37;
+      color: #d4af37;
+      font-size: 1.2rem;
+      cursor: pointer;
+      border-radius: 30px;
+      transition: 0.3s;
+    }
+
+    .choice-btn:active {
       background: #d4af37;
       color: #000;
-      transform: scale(0.96);
     }
 
-    #reveal-btn {
+    input[type="text"] {
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid #666;
+      color: #fff;
+      font-size: 1.2rem;
+      text-align: center;
+      margin-bottom: 20px;
+      outline: none;
+    }
+
+    /* SCREEN: BREW */
+    #screen-brew {
       display: none;
-      background: #d4af37;
-      color: #1a0b2e;
-      box-shadow: 0 0 25px rgba(212, 175, 55, 0.4);
-      animation: pulse 2s infinite;
+      pointer-events: auto;
     }
 
-    @keyframes pulse {
+    #brew-btn {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #ff9f43, #d35400);
+      border: 4px solid #fff;
+      box-shadow: 0 0 30px #d35400;
+      color: white;
+      font-weight: bold;
+      font-size: 1.2rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto;
+      animation: pulse-orange 2s infinite;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    @keyframes pulse-orange {
       0% {
         transform: scale(1);
-        box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.7);
+        box-shadow: 0 0 0 0 rgba(211, 84, 0, 0.7);
       }
 
       70% {
-        transform: scale(1.05);
-        box-shadow: 0 0 0 15px rgba(212, 175, 55, 0);
+        transform: scale(1.1);
+        box-shadow: 0 0 0 20px rgba(211, 84, 0, 0);
       }
 
       100% {
         transform: scale(1);
-        box-shadow: 0 0 0 0 rgba(212, 175, 55, 0);
+        box-shadow: 0 0 0 0 rgba(211, 84, 0, 0);
       }
     }
 
+    /* SCREEN: DRINK */
+    #screen-drink {
+      display: none;
+      pointer-events: auto;
+      text-align: center;
+      width: 100%;
+    }
+
+    .tilt-icon {
+      font-size: 4rem;
+      animation: tilt-anim 3s infinite ease-in-out;
+      display: block;
+      margin-bottom: 20px;
+    }
+
+    @keyframes tilt-anim {
+
+      0%,
+      100% {
+        transform: rotate(0deg);
+      }
+
+      25% {
+        transform: rotate(45deg);
+      }
+
+      75% {
+        transform: rotate(-45deg);
+      }
+    }
+
+    .debug-btn {
+      margin-top: 50px;
+      padding: 10px 20px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid #666;
+      color: #aaa;
+      border-radius: 5px;
+      cursor: pointer;
+      z-index: 999;
+    }
+
+    /* SCREEN: SHAKE */
+    #screen-shake {
+      display: none;
+      pointer-events: none;
+    }
+
+    /* SCREEN: REVEAL */
+    #reveal-btn {
+      display: none;
+      pointer-events: auto;
+      background: #d4af37;
+      color: #1a0b2e;
+      padding: 15px 40px;
+      border-radius: 30px;
+      font-weight: bold;
+      border: none;
+      box-shadow: 0 0 20px rgba(212, 175, 55, 0.5);
+      animation: pop-in 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      cursor: pointer;
+      font-size: 1.2rem;
+      margin-top: 20px;
+    }
+
+    @keyframes pop-in {
+      from {
+        transform: scale(0);
+      }
+
+      to {
+        transform: scale(1);
+      }
+    }
+
+    /* PREDICTION BOX */
     #prediction-box {
       display: none;
+      pointer-events: auto;
       position: absolute;
       bottom: 0;
       left: 0;
       width: 100%;
-      background: rgba(10, 5, 15, 0.95);
+      background: rgba(10, 5, 15, 0.98);
       padding: 30px 20px;
       box-sizing: border-box;
       border-top: 2px solid #d4af37;
-      min-height: 40vh;
-      box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.8);
+      min-height: 45vh;
+      /* สูงขึ้นนิดนึงให้อ่านง่าย */
       z-index: 100;
       border-radius: 20px 20px 0 0;
+      box-shadow: 0 -10px 50px rgba(0, 0, 0, 0.8);
+      transform: translateY(100%);
+      transition: transform 0.5s ease-out;
+      /* เลื่อนขึ้นมาจากข้างล่าง */
+    }
+
+    #prediction-box.show {
+      transform: translateY(0);
+    }
+
+    h1,
+    h2 {
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: #f9d976;
+      margin: 10px 0;
+    }
+
+    p {
+      color: #ccc;
+      font-size: 1rem;
+      margin-bottom: 20px;
     }
   </style>
 </head>
 
 <body>
 
+  <audio id="audio-pour" loop>
+    <source src="pour.mp3" type="audio/mpeg">
+  </audio>
+
   <canvas id="canvas"></canvas>
 
-  <div id="ui">
-    <h1 id="status-text">TASSEOGRAPHY</h1>
-    <p id="instruction-text" class="sub-text">Focus your intent. Begin the ritual.</p>
-    <button id="start-btn" class="action-btn">Start Ritual</button>
-    <button id="reveal-btn" class="action-btn">Read My Fortune</button>
+  <div id="ui-layer">
+    <div id="screen-select">
+      <h2>The Ritual Begins</h2>
+      <input type="text" id="user-question" placeholder="สิ่งที่ปรารถนาจะรู้..." autocomplete="off">
+      <p>เลือกเครื่องดื่มเพื่อบูชา</p>
+      <button class="choice-btn" onclick="selectDrink('TEA')">☕ TEA (ใบชา)</button>
+      <button class="choice-btn" onclick="selectDrink('COFFEE')">🫘 COFFEE (กาแฟ)</button>
+    </div>
+
+    <div id="screen-brew">
+      <p>กดค้างเพื่อรินน้ำร้อน</p>
+      <div id="brew-btn">HOLD</div>
+    </div>
+
+    <div id="screen-drink">
+      <div class="tilt-icon">📱</div>
+      <h2>DRINK</h2>
+      <p>เอียงมือถือเข้าหาตัวเพื่อดื่ม</p>
+      <!-- <button onclick="debugDrink()" class="debug-btn">Skip (Debug)</button> -->
+    </div>
+
+    <div id="screen-shake">
+      <h1>SHAKE IT</h1>
+      <p>เขย่าให้ตะกอนกระจายตัว</p>
+      <button id="reveal-btn">OPEN YOUR FATE</button>
+    </div>
   </div>
 
   <div id="prediction-box">
-    <h3 style="margin-top:0; color:#d4af37; text-align:center; text-transform:uppercase; letter-spacing:2px;">The Oracle
-      Speaks</h3>
+    <h3 style="text-align:center; color:#d4af37;">คำทำนาย</h3>
     <div style="width: 50px; height: 1px; background: #d4af37; margin: 10px auto 20px;"></div>
-    <p id="result-text" style="color: #e0d0a8; line-height: 1.8; text-align: center; font-size: 1.1rem;">Waiting for the
-      spirits...</p>
-    <div style="text-align: center; margin-top: 30px;">
+    <p id="result-text" style="text-align:center; line-height: 1.6; font-size: 1.1rem;">กำลังสื่อสาร...</p>
+    <div style="text-align:center; margin-top:20px;">
       <button onclick="location.reload()"
-        style="padding: 10px 30px; font-size: 0.9rem; background: transparent; border: 1px solid #666; color: #888; border-radius: 30px; cursor: pointer;">Play
-        Again</button>
+        style="padding:10px 30px; border-radius:20px; cursor:pointer; background: transparent; border: 1px solid #666; color: #888;">เล่นใหม่</button>
     </div>
   </div>
 
   <script>
+    // --- SETUP ---
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
-
-    const uiStatus = document.getElementById('status-text');
-    const uiSubText = document.getElementById('instruction-text');
-    const startBtn = document.getElementById('start-btn');
-    const revealBtn = document.getElementById('reveal-btn');
-
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
-    // --- PHYSICS CONFIG ---
-    let particles = [];
-    const NUM_PARTICLES = 800;
     const CUP_RADIUS = Math.min(canvas.width, canvas.height) * 0.42;
     const CENTER_X = canvas.width / 2;
     const CENTER_Y = canvas.height / 2;
 
-    let accX = 0, accY = 0;
-    let tiltX = 0, tiltY = 0;
-    let state = 'IDLE';
+    // State Management
+    let state = 'SELECT';
+    let drinkType = 'TEA';
+    let liquidLevel = 0;
+    let liquidOpacity = 0;
+    const audioPour = document.getElementById('audio-pour');
+
+    // --- PARTICLES SYSTEM ---
+    let particles = [];
+    let steamParticles = [];
 
     class TeaLeaf {
       constructor(type) {
@@ -169,251 +321,283 @@
         const r = Math.sqrt(Math.random()) * CUP_RADIUS;
         this.x = CENTER_X + r * Math.cos(angle);
         this.y = CENTER_Y + r * Math.sin(angle);
-
         this.type = type;
+        this.mass = (type === 'LEAF') ? (2.0 + Math.random() * 2.5) : (0.8 + Math.random());
+
         this.vx = 0;
         this.vy = 0;
-        this.mass = (type === 'LEAF') ? (1.5 + Math.random() * 2) : (0.5 + Math.random() * 0.5);
-        // ลด Friction ปกติลงเพื่อให้ไหลลื่นตอนเขย่า
-        this.friction = 0.94;
+        this.friction = 0.93;
 
-        this.rotation = Math.random() * Math.PI * 2;
+        this.rotation = Math.random();
         this.rotationSpeed = 0;
 
-        const shade = Math.random();
-        if (shade > 0.7) {
-          this.color = `rgba(40, 30, 20, ${0.8 + Math.random() * 0.2})`;
-        } else {
-          this.color = `rgba(20, 10, 5, ${0.9 + Math.random() * 0.1})`;
-        }
+        const baseColor = (drinkType === 'TEA') ? [40, 50, 20] : [30, 15, 5];
+        this.color = `rgba(${baseColor[0]}, ${baseColor[1]}, ${baseColor[2]}, ${0.8 + Math.random() * 0.2})`;
 
         this.vertices = [];
-        if (this.type === 'LEAF') {
-          this.size = this.mass * 5;
-          const points = 5 + Math.floor(Math.random() * 4);
-          for (let i = 0; i < points; i++) {
-            const theta = (i / points) * Math.PI * 2;
-            const rad = this.size * (0.6 + Math.random() * 0.6);
-            this.vertices.push({
-              x: Math.cos(theta) * rad,
-              y: Math.sin(theta) * rad
-            });
-          }
-        } else {
-          this.size = this.mass * 3;
-          const points = 3 + Math.floor(Math.random() * 3);
-          for (let i = 0; i < points; i++) {
-            const theta = (i / points) * Math.PI * 2;
-            const rad = this.size * (0.8 + Math.random() * 0.4);
-            this.vertices.push({
-              x: Math.cos(theta) * rad,
-              y: Math.sin(theta) * rad
-            });
-          }
+        let size = (type === 'LEAF') ? this.mass * 4 : this.mass * 2;
+        let points = 3 + Math.floor(Math.random() * 5);
+        for (let i = 0; i < points; i++) {
+          let th = (i / points) * Math.PI * 2;
+          let rad = size * (0.5 + Math.random());
+          this.vertices.push({ x: Math.cos(th) * rad, y: Math.sin(th) * rad });
         }
       }
 
       update(inputLow) {
-        if (state === 'REVEAL') return;
+        if (state !== 'SHAKE') return;
 
-        // --- 1. ระบบเบรกอัตโนมัติ (Smart Braking) ---
-        // ถ้าคนหยุดเขย่า (Input ต่ำ) ให้เพิ่มแรงเสียดทานทันที
-        let currentFriction = this.friction;
-        if (inputLow) {
-          currentFriction = 0.85; // เบรกหัวทิ่ม (0.85 จะหยุดไวกว่า 0.94 มาก)
-        }
-
-        this.vx -= (accX * 0.9) / this.mass;
-        this.vy -= (accY * 0.9) / this.mass;
+        let currentFriction = inputLow ? 0.89 : this.friction;
+        this.vx -= (accX * 1.8) / this.mass;
+        this.vy -= (accY * 1.8) / this.mass;
         this.vx += tiltX * 0.05;
         this.vy += tiltY * 0.05;
-
         this.vx *= currentFriction;
         this.vy *= currentFriction;
-
         this.x += this.vx;
         this.y += this.vy;
-
-        // หมุน: ถ้าหยุดเขย่า ให้หยุดหมุนเร็วขึ้น
-        this.rotationSpeed += (Math.abs(this.vx) + Math.abs(this.vy)) * 0.01;
-        this.rotationSpeed *= currentFriction;
-        this.rotation += this.rotationSpeed;
 
         const dx = this.x - CENTER_X;
         const dy = this.y - CENTER_Y;
         const dist = Math.sqrt(dx * dx + dy * dy);
 
         if (dist > CUP_RADIUS) {
-          const angle = Math.atan2(dy, dx);
-          this.x = CENTER_X + Math.cos(angle) * CUP_RADIUS;
-          this.y = CENTER_Y + Math.sin(angle) * CUP_RADIUS;
-          this.vx *= -0.3;
-          this.vy *= -0.3;
+          let ang = Math.atan2(dy, dx);
+          this.x = CENTER_X + Math.cos(ang) * CUP_RADIUS;
+          this.y = CENTER_Y + Math.sin(ang) * CUP_RADIUS;
+          this.vx *= -0.2;
+          this.vy *= -0.2;
         }
       }
 
       draw() {
+        let alpha = 1;
+        if (state === 'BREW') alpha = 0.1;
+        if (state === 'DRINK') alpha = 1 - liquidOpacity;
+
         ctx.save();
+        ctx.globalAlpha = alpha;
         ctx.translate(this.x, this.y);
         ctx.rotate(this.rotation);
         ctx.fillStyle = this.color;
         ctx.beginPath();
         ctx.moveTo(this.vertices[0].x, this.vertices[0].y);
-        for (let i = 1; i < this.vertices.length; i++) {
-          ctx.lineTo(this.vertices[i].x, this.vertices[i].y);
-        }
-        ctx.closePath();
+        for (let i = 1; i < this.vertices.length; i++) ctx.lineTo(this.vertices[i].x, this.vertices[i].y);
         ctx.fill();
-        if (this.type === 'LEAF' && Math.random() > 0.5) {
-          ctx.strokeStyle = "rgba(0,0,0,0.3)";
-          ctx.lineWidth = 1;
-          ctx.beginPath();
-          ctx.moveTo(0, 0);
-          ctx.lineTo(this.vertices[0].x * 0.6, this.vertices[0].y * 0.6);
-          ctx.stroke();
-        }
         ctx.restore();
       }
     }
 
-    // --- MAIN LOOP ---
-    let stillFrames = 0;
-
-    function checkSettled() {
-      if (state !== 'BREWING') return;
-
-      // 1. เช็คแรงจากมือคน (Input Force)
-      // ถ้า accX, accY น้อยกว่า 1.5 ถือว่าคนหยุดเขย่าแล้ว (ยอมให้มือสั่นได้นิดหน่อย)
-      const inputForce = Math.abs(accX) + Math.abs(accY);
-      const isInputLow = inputForce < 2.5; // เพิ่ม Threshold ให้กว้างขึ้น (เดิม 0 หรือ 1)
-
-      // 2. เช็คความเร็วเฉลี่ยของใบชา (Average Velocity)
-      let totalVelocity = 0;
-      let sampleCount = 0;
-      // สุ่มเช็คทุกๆ 5 ตัว เพื่อความเร็ว
-      for (let i = 0; i < particles.length; i += 5) {
-        totalVelocity += Math.abs(particles[i].vx) + Math.abs(particles[i].vy);
-        sampleCount++;
+    class Steam {
+      constructor() {
+        this.x = CENTER_X + (Math.random() - 0.5) * CUP_RADIUS;
+        this.y = CENTER_Y + (Math.random() - 0.5) * CUP_RADIUS;
+        this.vx = (Math.random() - 0.5) * 0.5;
+        this.vy = -1 - Math.random();
+        this.size = 10 + Math.random() * 20;
+        this.life = 100;
       }
-      const avgVelocity = totalVelocity / sampleCount;
-
-      // เงื่อนไข: ถ้าคนหยุดเขย่า (Input Low) และใบชาเริ่มช้าลง (Avg < 1.0)
-      // ค่า 1.0 นี่คือใบชายังขยับดุ๊กดิ๊กได้นิดหน่อย ไม่ต้องนิ่งสนิท
-      if (isInputLow && avgVelocity < 1.0) {
-        stillFrames++;
-      } else {
-        stillFrames = 0;
-        // ซ่อนปุ่มถ้ากลับมาเขย่าแรงๆ
-        if (avgVelocity > 2.0) {
-          revealBtn.style.display = 'none';
-          uiStatus.innerText = "SHAKE IT!";
-          uiSubText.style.display = 'none';
-        }
+      update() {
+        this.x += this.vx; this.y += this.vy;
+        this.size += 0.2; this.life -= 1.5;
       }
-
-      // ลดเวลาการรอลง (30 เฟรม = 0.5 วินาที)
-      if (stillFrames > 30) {
-        revealBtn.style.display = 'block';
-        uiStatus.innerText = "DESTINY AWAITS";
+      draw() {
+        ctx.save();
+        ctx.globalAlpha = (this.life / 100) * 0.3;
+        ctx.fillStyle = "#ffffff";
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
       }
-
-      return isInputLow; // ส่งค่ากลับไปบอก update() ว่าควรเบรกไหม
     }
 
+    // --- GAME LOOP ---
     function loop() {
-      // เช็คสถานะความนิ่งก่อน
-      const isInputLow = checkSettled();
-
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+      // ก้นแก้ว
       ctx.save();
       ctx.beginPath();
       ctx.arc(CENTER_X, CENTER_Y, CUP_RADIUS, 0, Math.PI * 2);
-
-      let cupGradient = ctx.createRadialGradient(CENTER_X, CENTER_Y, CUP_RADIUS * 0.1, CENTER_X, CENTER_Y, CUP_RADIUS);
-      cupGradient.addColorStop(0, '#fdfcf0');
-      cupGradient.addColorStop(0.8, '#efe6d5');
-      cupGradient.addColorStop(1, '#d0c0a0');
-      ctx.fillStyle = cupGradient;
-      ctx.fill();
+      let grad = ctx.createRadialGradient(CENTER_X, CENTER_Y, 0, CENTER_X, CENTER_Y, CUP_RADIUS);
+      grad.addColorStop(0, '#fffbf0'); grad.addColorStop(1, '#d0c0a0');
+      ctx.fillStyle = grad; ctx.fill();
       ctx.clip();
 
+      let isLow = checkSettled();
       particles.forEach(p => {
-        // ส่งค่า isInputLow ไปบอกใบชาว่า "เฮ้ย เจ้านายหยุดเขย่าแล้ว เบรกด่วน!"
-        p.update(isInputLow);
+        if (state === 'SHAKE') p.update(isLow);
         p.draw();
+      });
+
+      if (liquidOpacity > 0) {
+        ctx.fillStyle = (drinkType === 'TEA')
+          ? `rgba(60, 30, 10, ${liquidOpacity})`
+          : `rgba(20, 10, 5, ${liquidOpacity})`;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      }
+
+      steamParticles.forEach((s, index) => {
+        s.update(); s.draw();
+        if (s.life <= 0) steamParticles.splice(index, 1);
       });
 
       ctx.restore();
 
-      ctx.strokeStyle = '#d4af37';
-      ctx.lineWidth = 14;
-      ctx.beginPath();
-      ctx.arc(CENTER_X, CENTER_Y, CUP_RADIUS, 0, Math.PI * 2);
-      ctx.stroke();
-
-      ctx.strokeStyle = 'rgba(50,30,10,0.15)';
-      ctx.lineWidth = 4;
-      ctx.beginPath();
-      ctx.arc(CENTER_X, CENTER_Y, CUP_RADIUS - 7, 0, Math.PI * 2);
-      ctx.stroke();
+      ctx.strokeStyle = '#d4af37'; ctx.lineWidth = 14;
+      ctx.beginPath(); ctx.arc(CENTER_X, CENTER_Y, CUP_RADIUS, 0, Math.PI * 2); ctx.stroke();
 
       requestAnimationFrame(loop);
     }
 
-    function init() {
+    // --- LOGIC ---
+    window.selectDrink = (type) => {
+      drinkType = type;
+      document.getElementById('screen-select').style.display = 'none';
+      document.getElementById('screen-brew').style.display = 'block';
+      state = 'BREW';
+      initParticles();
+    };
+
+    function initParticles() {
       particles = [];
-      for (let i = 0; i < NUM_PARTICLES; i++) {
-        const type = (Math.random() > 0.6) ? 'LEAF' : 'DUST';
-        particles.push(new TeaLeaf(type));
+      for (let i = 0; i < 800; i++) {
+        let t = Math.random() > 0.6 ? 'LEAF' : 'DUST';
+        particles.push(new TeaLeaf(t));
       }
       loop();
     }
 
-    function handleMotion(event) {
-      const acc = event.acceleration || event.accelerationIncludingGravity;
-      if (acc) {
-        // ใส่ Deadzone นิดหน่อย: ถ้าขยับน้อยมากๆ ให้ตีเป็น 0 ไปเลย ลด Noise
-        let rawX = acc.x || 0;
-        let rawY = acc.y || 0;
-        accX = (Math.abs(rawX) < 0.5) ? 0 : rawX;
-        accY = (Math.abs(rawY) < 0.5) ? 0 : rawY;
+    const brewBtn = document.getElementById('brew-btn');
+    let brewInterval;
+
+    const startBrewAction = (e) => {
+      if (e) e.preventDefault();
+      if (liquidLevel >= 100) return;
+      try { audioPour.play(); } catch (e) { }
+      brewInterval = setInterval(() => {
+        if (liquidLevel < 100) {
+          liquidLevel += 1;
+          liquidOpacity = liquidLevel / 100;
+          brewBtn.innerText = `${Math.floor(liquidLevel)}%`;
+          if (Math.random() > 0.5) steamParticles.push(new Steam());
+        } else {
+          finishBrew();
+        }
+      }, 30);
+    };
+
+    const stopBrewAction = () => {
+      clearInterval(brewInterval);
+      audioPour.pause(); audioPour.currentTime = 0;
+    };
+
+    brewBtn.addEventListener('touchstart', startBrewAction);
+    brewBtn.addEventListener('mousedown', startBrewAction);
+    brewBtn.addEventListener('touchend', stopBrewAction);
+    brewBtn.addEventListener('mouseup', stopBrewAction);
+
+    function finishBrew() {
+      stopBrewAction();
+      document.getElementById('screen-brew').style.display = 'none';
+      document.getElementById('screen-drink').style.display = 'block';
+      state = 'DRINK';
+      if (typeof DeviceMotionEvent.requestPermission === 'function') {
+        DeviceMotionEvent.requestPermission().then(res => {
+          if (res == 'granted') window.addEventListener('deviceorientation', handleDrinkTilt);
+        });
+      } else {
+        window.addEventListener('deviceorientation', handleDrinkTilt);
       }
-    }
-    function handleOrientation(event) {
-      tiltX = event.gamma || 0; tiltY = event.beta || 0;
     }
 
-    startBtn.addEventListener('click', async () => {
-      if (typeof DeviceMotionEvent.requestPermission === 'function') {
-        try { await DeviceMotionEvent.requestPermission(); } catch (e) { }
+    function handleDrinkTilt(event) {
+      if (state !== 'DRINK') return;
+      const tilt = event.beta;
+      if (tilt < 60 && liquidLevel > 0) {
+        liquidLevel -= 0.8;
+        liquidOpacity = liquidLevel / 100;
+        if (liquidLevel <= 0) finishDrink();
       }
+    }
+
+    window.debugDrink = () => {
+      let drinkInt = setInterval(() => {
+        liquidLevel -= 5;
+        liquidOpacity = liquidLevel / 100;
+        if (liquidLevel <= 0) {
+          clearInterval(drinkInt);
+          finishDrink();
+        }
+      }, 20);
+    }
+
+    function finishDrink() {
+      window.removeEventListener('deviceorientation', handleDrinkTilt);
+      document.getElementById('screen-drink').style.display = 'none';
+      document.getElementById('screen-shake').style.display = 'block';
+      state = 'SHAKE';
       window.addEventListener('devicemotion', handleMotion);
       window.addEventListener('deviceorientation', handleOrientation);
+    }
 
-      state = 'BREWING';
-      uiStatus.innerText = "SHAKE THE CUP!";
-      uiSubText.innerText = "Shake until the leaves settle.";
-      startBtn.style.display = 'none';
-      init();
-    });
+    // SHAKE SENSORS
+    let accX = 0, accY = 0, tiltX = 0, tiltY = 0;
 
+    function handleMotion(e) {
+      let acc = e.acceleration || e.accelerationIncludingGravity;
+      if (acc) {
+        let rx = acc.x || 0; let ry = acc.y || 0;
+        accX = (Math.abs(rx) < 0.5) ? 0 : rx;
+        accY = (Math.abs(ry) < 0.5) ? 0 : ry;
+      }
+    }
+
+    function handleOrientation(e) {
+      tiltX = e.gamma || 0;
+      tiltY = e.beta || 0;
+    }
+
+    let stillFrames = 0;
+    const revealBtn = document.getElementById('reveal-btn');
+
+    function checkSettled() {
+      let force = Math.abs(accX) + Math.abs(accY);
+      let isInputLow = force < 2.5;
+      let vel = 0;
+      for (let i = 0; i < particles.length; i += 10) vel += Math.abs(particles[i].vx) + Math.abs(particles[i].vy);
+      vel /= (particles.length / 10);
+
+      if (isInputLow && vel < 0.8) stillFrames++;
+      else {
+        stillFrames = 0;
+        revealBtn.style.display = 'none';
+      }
+
+      if (stillFrames > 30) revealBtn.style.display = 'block';
+      return isInputLow;
+    }
+
+    // REVEAL
     revealBtn.addEventListener('click', async () => {
       state = 'REVEAL';
-      document.getElementById('ui').style.display = 'none';
-      window.removeEventListener('devicemotion', handleMotion);
-      document.getElementById('prediction-box').style.display = 'block';
-      document.getElementById('result-text').innerText = "Reading the signs... (Wait approx 10-20s)";
+      document.getElementById('ui-layer').style.display = 'none';
 
-      const tempCanvas = document.createElement('canvas');
-      const tempCtx = tempCanvas.getContext('2d');
-      const targetSize = 512;
-      tempCanvas.width = targetSize;
-      tempCanvas.height = targetSize;
-      tempCtx.fillStyle = "#ffffff";
-      tempCtx.fillRect(0, 0, targetSize, targetSize);
-      tempCtx.drawImage(canvas, 0, 0, targetSize, targetSize);
-      const base64 = tempCanvas.toDataURL('image/jpeg', 0.6).split(',')[1];
+      // 1. เลื่อน Canvas ขึ้น
+      canvas.classList.add('canvas-reveal');
+
+      // 2. แสดงกล่องข้อความ (เลื่อนขึ้นจากล่าง)
+      const pBox = document.getElementById('prediction-box');
+      pBox.style.display = 'block';
+      setTimeout(() => pBox.classList.add('show'), 100);
+
+      const tCanvas = document.createElement('canvas');
+      tCanvas.width = 512; tCanvas.height = 512;
+      const tCtx = tCanvas.getContext('2d');
+      tCtx.fillStyle = "#fff"; tCtx.fillRect(0, 0, 512, 512);
+      tCtx.drawImage(canvas, 0, 0, 512, 512);
+      const base64 = tCanvas.toDataURL('image/jpeg', 0.6).split(',')[1];
 
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 60000);
@@ -426,20 +610,15 @@
           signal: controller.signal
         });
         clearTimeout(timeoutId);
-
         const data = await res.json();
-        if (data.success) {
-          document.getElementById('result-text').innerText = data.prediction;
-        } else {
-          throw new Error(data.error || "Unknown error");
-        }
+        document.getElementById('result-text').innerText = data.success ? data.prediction : "Error.";
       } catch (e) {
-        console.error(e);
-        let msg = "The connection to the spirit world was lost.";
-        if (e.name === 'AbortError') msg = "The spirits are taking too long (Timeout).";
-        document.getElementById('result-text').innerText = msg + " Please try again.";
+        let msg = "Connection lost.";
+        if (e.name === 'AbortError') msg = "Timeout. Try again.";
+        document.getElementById('result-text').innerText = msg;
       }
     });
+
   </script>
 </body>
 
