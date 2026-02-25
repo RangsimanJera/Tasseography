@@ -23,7 +23,7 @@ app.post('/api/predict', async (req, res) => {
     // 🟢 แก้ไขตรงนี้ครับ (เลือกโมเดลที่ไวที่สุด)
     // ใช้ "gemini-1.5-flash" แทน "gemini-pro" หรือตัวอื่นๆ
     // -----------------------------------------------------------
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemma-3-27b-it" });
 
     const prompt = `
       You are a mystical fortune teller reading tea leaves (Tasseography).
