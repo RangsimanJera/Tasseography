@@ -4,34 +4,46 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Tasseography: The Ritual</title>
+  <title>Tea Reading: Ghibli Edition</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,700;1,400&family=Mali:wght@400;600&display=swap"
+    rel="stylesheet">
+
   <style>
     body {
       margin: 0;
       overflow: hidden;
-      background: radial-gradient(circle at center, #1a0b2e 0%, #000000 100%);
-      color: #d4af37;
-      font-family: 'Segoe UI', serif;
+      background: linear-gradient(to bottom, #1a1a2e 0%, #16213e 40%, #243b55 100%);
+      color: #4a3b2a;
+      font-family: 'Crimson Pro', serif;
       touch-action: none;
       user-select: none;
       -webkit-user-select: none;
     }
 
-    /* เพิ่ม Transition ให้ Canvas เลื่อนนุ่มๆ */
+    body::before {
+      content: "";
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background-image:
+        radial-gradient(white, rgba(255, 255, 255, .2) 2px, transparent 3px),
+        radial-gradient(white, rgba(255, 255, 255, .15) 1px, transparent 2px);
+      background-size: 550px 550px, 350px 350px;
+      opacity: 0.6;
+      z-index: -1;
+    }
+
     canvas {
       display: block;
-      filter: drop-shadow(0 0 30px rgba(212, 175, 55, 0.15));
-      transition: transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
-      /* Ease-out นุ่มๆ */
+      filter: drop-shadow(0 10px 40px rgba(0, 0, 0, 0.5));
+      transition: transform 1s cubic-bezier(0.68, -0.55, 0.265, 1.55);
     }
 
-    /* Class สำหรับเลื่อน Canvas ขึ้น */
     .canvas-reveal {
-      transform: translateY(-25%);
-      /* เลื่อนขึ้น 25% ของจอ */
+      transform: translateY(-20%) scale(0.9);
     }
 
-    /* UI Container */
     #ui-layer {
       position: absolute;
       top: 0;
@@ -48,59 +60,99 @@
       transition: opacity 0.5s;
     }
 
-    /* SCREEN: SELECT */
-    #screen-select {
+    /* CARD STYLE (หน้าเลือก) - อันนี้อ่านง่ายอยู่แล้ว */
+    .ghibli-card {
       pointer-events: auto;
-      background: rgba(0, 0, 0, 0.8);
-      padding: 40px;
+      background: #fdfcf0;
+      padding: 30px 40px;
       border-radius: 20px;
-      border: 1px solid #d4af37;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      border: 2px solid #e0d0a0;
+      max-width: 85%;
     }
 
-    .choice-btn {
-      display: block;
-      width: 200px;
-      margin: 10px auto;
-      padding: 15px;
-      background: transparent;
-      border: 1px solid #d4af37;
-      color: #d4af37;
-      font-size: 1.2rem;
+    /* --- NEW: FLOATING TEXT STYLE (สำหรับข้อความที่ลอยเหนือถ้วย) --- */
+    .floating-text {
+      color: #ffffff !important;
+      /* สีขาวล้วน */
+      text-shadow:
+        0 2px 4px rgba(0, 0, 0, 0.8),
+        /* เงาลึก */
+        0 0 10px rgba(0, 0, 0, 0.5);
+      /* เรืองแสงรอบๆ */
+      font-weight: 700;
+      font-family: 'Mali', cursive;
+      background: rgba(0, 0, 0, 0.3);
+      /* รองพื้นจางๆ */
+      padding: 8px 20px;
+      border-radius: 20px;
+      backdrop-filter: blur(2px);
+      display: inline-block;
+      margin-bottom: 20px;
+    }
+
+    .floating-header {
+      color: #eecda3 !important;
+      text-shadow: 2px 2px 5px #2c3e50;
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+    }
+
+    h1,
+    h2 {
+      color: #2c3e50;
+      margin: 10px 0;
+      font-weight: 700;
+    }
+
+    p {
+      color: #5d6d7e;
+      font-size: 1.1rem;
+      margin-bottom: 25px;
+      font-family: 'Mali', cursive;
+    }
+
+    .magic-btn {
+      display: inline-block;
+      padding: 12px 30px;
+      margin: 10px;
+      background: linear-gradient(to right, #a8e063, #56ab2f);
+      border: none;
+      border-radius: 50px;
+      color: white;
+      font-family: 'Mali', cursive;
+      font-size: 1.1rem;
+      font-weight: bold;
       cursor: pointer;
-      border-radius: 30px;
-      transition: 0.3s;
+      box-shadow: 0 5px 15px rgba(86, 171, 47, 0.4);
     }
 
-    .choice-btn:active {
-      background: #d4af37;
-      color: #000;
+    .magic-btn.secondary {
+      background: linear-gradient(to right, #eecda3, #ef629f);
     }
 
     input[type="text"] {
-      background: transparent;
+      background: rgba(0, 0, 0, 0.05);
       border: none;
-      border-bottom: 1px solid #666;
-      color: #fff;
+      border-bottom: 2px solid #a8e063;
+      color: #2c3e50;
       font-size: 1.2rem;
       text-align: center;
       margin-bottom: 20px;
+      padding: 10px;
       outline: none;
-    }
-
-    /* SCREEN: BREW */
-    #screen-brew {
-      display: none;
-      pointer-events: auto;
+      font-family: 'Mali', cursive;
+      width: 100%;
     }
 
     #brew-btn {
-      width: 120px;
-      height: 120px;
+      width: 100px;
+      height: 100px;
       border-radius: 50%;
-      background: radial-gradient(circle, #ff9f43, #d35400);
+      background: radial-gradient(circle at 30% 30%, #ffecd2, #fcb69f);
       border: 4px solid #fff;
-      box-shadow: 0 0 30px #d35400;
-      color: white;
+      box-shadow: 0 0 20px rgba(252, 182, 159, 0.6);
+      color: #d35400;
       font-weight: bold;
       font-size: 1.2rem;
       cursor: pointer;
@@ -108,104 +160,23 @@
       align-items: center;
       justify-content: center;
       margin: 0 auto;
-      animation: pulse-orange 2s infinite;
-      -webkit-tap-highlight-color: transparent;
-      user-select: none;
+      animation: float 3s ease-in-out infinite;
     }
 
-    @keyframes pulse-orange {
+    @keyframes float {
       0% {
-        transform: scale(1);
-        box-shadow: 0 0 0 0 rgba(211, 84, 0, 0.7);
+        transform: translateY(0px);
       }
 
-      70% {
-        transform: scale(1.1);
-        box-shadow: 0 0 0 20px rgba(211, 84, 0, 0);
+      50% {
+        transform: translateY(-10px);
       }
 
       100% {
-        transform: scale(1);
-        box-shadow: 0 0 0 0 rgba(211, 84, 0, 0);
+        transform: translateY(0px);
       }
     }
 
-    /* SCREEN: DRINK */
-    #screen-drink {
-      display: none;
-      pointer-events: auto;
-      text-align: center;
-      width: 100%;
-    }
-
-    .tilt-icon {
-      font-size: 4rem;
-      animation: tilt-anim 3s infinite ease-in-out;
-      display: block;
-      margin-bottom: 20px;
-    }
-
-    @keyframes tilt-anim {
-
-      0%,
-      100% {
-        transform: rotate(0deg);
-      }
-
-      25% {
-        transform: rotate(45deg);
-      }
-
-      75% {
-        transform: rotate(-45deg);
-      }
-    }
-
-    .debug-btn {
-      margin-top: 50px;
-      padding: 10px 20px;
-      background: rgba(255, 255, 255, 0.1);
-      border: 1px solid #666;
-      color: #aaa;
-      border-radius: 5px;
-      cursor: pointer;
-      z-index: 999;
-    }
-
-    /* SCREEN: SHAKE */
-    #screen-shake {
-      display: none;
-      pointer-events: none;
-    }
-
-    /* SCREEN: REVEAL */
-    #reveal-btn {
-      display: none;
-      pointer-events: auto;
-      background: #d4af37;
-      color: #1a0b2e;
-      padding: 15px 40px;
-      border-radius: 30px;
-      font-weight: bold;
-      border: none;
-      box-shadow: 0 0 20px rgba(212, 175, 55, 0.5);
-      animation: pop-in 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      cursor: pointer;
-      font-size: 1.2rem;
-      margin-top: 20px;
-    }
-
-    @keyframes pop-in {
-      from {
-        transform: scale(0);
-      }
-
-      to {
-        transform: scale(1);
-      }
-    }
-
-    /* PREDICTION BOX */
     #prediction-box {
       display: none;
       pointer-events: auto;
@@ -213,36 +184,36 @@
       bottom: 0;
       left: 0;
       width: 100%;
-      background: rgba(10, 5, 15, 0.98);
+      background: #fdfcf0 url('https://www.transparenttextures.com/patterns/cream-paper.png');
       padding: 30px 20px;
       box-sizing: border-box;
-      border-top: 2px solid #d4af37;
-      min-height: 45vh;
-      /* สูงขึ้นนิดนึงให้อ่านง่าย */
+      border-top: 5px solid #a8e063;
+      min-height: 50vh;
       z-index: 100;
-      border-radius: 20px 20px 0 0;
-      box-shadow: 0 -10px 50px rgba(0, 0, 0, 0.8);
+      border-radius: 30px 30px 0 0;
       transform: translateY(100%);
-      transition: transform 0.5s ease-out;
-      /* เลื่อนขึ้นมาจากข้างล่าง */
+      transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
 
     #prediction-box.show {
       transform: translateY(0);
     }
 
-    h1,
-    h2 {
-      text-transform: uppercase;
-      letter-spacing: 2px;
-      color: #f9d976;
-      margin: 10px 0;
+    #result-text {
+      font-size: 1.2rem;
+      line-height: 1.8;
+      border-left: 3px solid #ef629f;
+      padding-left: 15px;
+      margin: 20px;
+      text-align: left;
+      font-family: 'Mali', cursive;
     }
 
-    p {
-      color: #ccc;
-      font-size: 1rem;
+    .tilt-icon {
+      font-size: 4rem;
+      display: block;
       margin-bottom: 20px;
+      filter: drop-shadow(0 5px 5px rgba(0, 0, 0, 0.2));
     }
   </style>
 </head>
@@ -256,40 +227,46 @@
   <canvas id="canvas"></canvas>
 
   <div id="ui-layer">
-    <div id="screen-select">
-      <h2>The Ritual Begins</h2>
-      <input type="text" id="user-question" placeholder="สิ่งที่ปรารถนาจะรู้..." autocomplete="off">
-      <p>เลือกเครื่องดื่มเพื่อบูชา</p>
-      <button class="choice-btn" onclick="selectDrink('TEA')">☕ TEA (ใบชา)</button>
-      <button class="choice-btn" onclick="selectDrink('COFFEE')">🫘 COFFEE (กาแฟ)</button>
+    <div id="screen-select" class="ghibli-card">
+      <h2>ร้านน้ำชาแห่งโชคชะตา</h2>
+      <input type="text" id="user-question" placeholder="พิมพ์สิ่งที่อยากรู้..." autocomplete="off">
+      <p>เลือกใบชาของคุณ</p>
+      <button class="magic-btn" onclick="selectDrink('TEA')">🍃 ใบชาเขียว</button>
+      <button class="magic-btn secondary" onclick="selectDrink('COFFEE')">☕ กาแฟคั่ว</button>
     </div>
 
-    <div id="screen-brew">
-      <p>กดค้างเพื่อรินน้ำร้อน</p>
+    <div id="screen-brew" style="display:none; pointer-events:auto;">
+      <p class="floating-text">กดค้างเพื่อรินน้ำร้อน</p>
       <div id="brew-btn">HOLD</div>
     </div>
 
-    <div id="screen-drink">
-      <div class="tilt-icon">📱</div>
-      <h2>DRINK</h2>
-      <p>เอียงมือถือเข้าหาตัวเพื่อดื่ม</p>
-      <!-- <button onclick="debugDrink()" class="debug-btn">Skip (Debug)</button> -->
+    <div id="screen-drink" style="display:none; pointer-events:auto; width:100%; text-align:center;">
+      <div class="tilt-icon">🍵</div>
+      <h2 class="floating-header">ดื่มชา</h2>
+      <p class="floating-text">เอียงมือถือเข้าหาตัวเพื่อดื่ม</p>
+      <br>
+      <button onclick="debugDrink()"
+        style="background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.5); color:#fff; padding:5px 15px; border-radius:15px; margin-top:10px;">ข้าม
+        (Debug)</button>
     </div>
 
-    <div id="screen-shake">
-      <h1>SHAKE IT</h1>
-      <p>เขย่าให้ตะกอนกระจายตัว</p>
-      <button id="reveal-btn">OPEN YOUR FATE</button>
+    <div id="screen-shake" style="display:none;">
+      <h1 class="floating-header">เขย่าเบาๆ</h1>
+      <p class="floating-text">ให้ใบชากระจายตัว...</p>
+      <br>
+      <button id="reveal-btn" class="magic-btn"
+        style="font-size:1.3rem; padding:15px 40px; display:none; pointer-events:auto; margin-top:20px;">เปิดคำทำนาย
+        ✨</button>
     </div>
   </div>
 
   <div id="prediction-box">
-    <h3 style="text-align:center; color:#d4af37;">คำทำนาย</h3>
-    <div style="width: 50px; height: 1px; background: #d4af37; margin: 10px auto 20px;"></div>
-    <p id="result-text" style="text-align:center; line-height: 1.6; font-size: 1.1rem;">กำลังสื่อสาร...</p>
-    <div style="text-align:center; margin-top:20px;">
-      <button onclick="location.reload()"
-        style="padding:10px 30px; border-radius:20px; cursor:pointer; background: transparent; border: 1px solid #666; color: #888;">เล่นใหม่</button>
+    <h3 style="text-align:center; font-family:'Crimson Pro'; font-size:1.5rem; color:#d35400;">คำทำนายจากก้นถ้วย</h3>
+    <div style="width: 50px; height: 3px; background: #a8e063; margin: 10px auto 20px; border-radius:2px;"></div>
+    <p id="result-text">กำลังสื่อสารกับจิตวิญญาณ...</p>
+    <div style="text-align:center; margin-top:30px;">
+      <button onclick="location.reload()" class="magic-btn secondary"
+        style="padding:10px 30px;">เล่นใหม่อีกครั้ง</button>
     </div>
   </div>
 
@@ -300,7 +277,7 @@
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
-    const CUP_RADIUS = Math.min(canvas.width, canvas.height) * 0.42;
+    const CUP_RADIUS = Math.min(canvas.width, canvas.height) * 0.40;
     const CENTER_X = canvas.width / 2;
     const CENTER_Y = canvas.height / 2;
 
@@ -327,19 +304,23 @@
         this.vx = 0;
         this.vy = 0;
         this.friction = 0.93;
-
         this.rotation = Math.random();
         this.rotationSpeed = 0;
 
-        const baseColor = (drinkType === 'TEA') ? [40, 50, 20] : [30, 15, 5];
-        this.color = `rgba(${baseColor[0]}, ${baseColor[1]}, ${baseColor[2]}, ${0.8 + Math.random() * 0.2})`;
+        if (drinkType === 'TEA') {
+          const green = 50 + Math.random() * 40;
+          this.color = `rgba(30, ${green}, 30, ${0.85 + Math.random() * 0.15})`;
+        } else {
+          const red = 40 + Math.random() * 10;
+          this.color = `rgba(${red}, ${red - 10}, ${red - 20}, ${0.9 + Math.random() * 0.1})`;
+        }
 
         this.vertices = [];
         let size = (type === 'LEAF') ? this.mass * 4 : this.mass * 2;
-        let points = 3 + Math.floor(Math.random() * 5);
+        let points = 4 + Math.floor(Math.random() * 4);
         for (let i = 0; i < points; i++) {
           let th = (i / points) * Math.PI * 2;
-          let rad = size * (0.5 + Math.random());
+          let rad = size * (0.6 + Math.random() * 0.4);
           this.vertices.push({ x: Math.cos(th) * rad, y: Math.sin(th) * rad });
         }
       }
@@ -381,8 +362,12 @@
         ctx.rotate(this.rotation);
         ctx.fillStyle = this.color;
         ctx.beginPath();
+
         ctx.moveTo(this.vertices[0].x, this.vertices[0].y);
-        for (let i = 1; i < this.vertices.length; i++) ctx.lineTo(this.vertices[i].x, this.vertices[i].y);
+        for (let i = 1; i < this.vertices.length; i++) {
+          ctx.lineTo(this.vertices[i].x, this.vertices[i].y);
+        }
+        ctx.closePath();
         ctx.fill();
         ctx.restore();
       }
@@ -392,19 +377,19 @@
       constructor() {
         this.x = CENTER_X + (Math.random() - 0.5) * CUP_RADIUS;
         this.y = CENTER_Y + (Math.random() - 0.5) * CUP_RADIUS;
-        this.vx = (Math.random() - 0.5) * 0.5;
-        this.vy = -1 - Math.random();
-        this.size = 10 + Math.random() * 20;
-        this.life = 100;
+        this.vx = (Math.random() - 0.5) * 0.3;
+        this.vy = -0.5 - Math.random() * 0.5;
+        this.size = 5 + Math.random() * 15;
+        this.life = 150;
       }
       update() {
         this.x += this.vx; this.y += this.vy;
-        this.size += 0.2; this.life -= 1.5;
+        this.size += 0.15; this.life -= 1;
       }
       draw() {
         ctx.save();
-        ctx.globalAlpha = (this.life / 100) * 0.3;
-        ctx.fillStyle = "#ffffff";
+        ctx.globalAlpha = (this.life / 150) * 0.2;
+        ctx.fillStyle = "#fff";
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
         ctx.fill();
@@ -416,28 +401,40 @@
     function loop() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // ก้นแก้ว
+      // 1. Cup Base
       ctx.save();
       ctx.beginPath();
       ctx.arc(CENTER_X, CENTER_Y, CUP_RADIUS, 0, Math.PI * 2);
       let grad = ctx.createRadialGradient(CENTER_X, CENTER_Y, 0, CENTER_X, CENTER_Y, CUP_RADIUS);
-      grad.addColorStop(0, '#fffbf0'); grad.addColorStop(1, '#d0c0a0');
+      grad.addColorStop(0, '#ffffff');
+      grad.addColorStop(0.8, '#f4f1ea');
+      grad.addColorStop(1, '#e0d8c0');
       ctx.fillStyle = grad; ctx.fill();
       ctx.clip();
 
+      // 2. Leaves
       let isLow = checkSettled();
       particles.forEach(p => {
         if (state === 'SHAKE') p.update(isLow);
         p.draw();
       });
 
+      // 3. Liquid
       if (liquidOpacity > 0) {
-        ctx.fillStyle = (drinkType === 'TEA')
-          ? `rgba(60, 30, 10, ${liquidOpacity})`
-          : `rgba(20, 10, 5, ${liquidOpacity})`;
+        if (drinkType === 'TEA') {
+          ctx.fillStyle = `rgba(100, 130, 50, ${liquidOpacity * 0.95})`;
+        } else {
+          ctx.fillStyle = `rgba(40, 20, 10, ${liquidOpacity * 0.95})`;
+        }
         ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        ctx.fillStyle = `rgba(255,255,255, ${liquidOpacity * 0.1})`;
+        ctx.beginPath();
+        ctx.arc(CENTER_X - CUP_RADIUS * 0.3, CENTER_Y - CUP_RADIUS * 0.3, CUP_RADIUS * 0.1, 0, Math.PI * 2);
+        ctx.fill();
       }
 
+      // 4. Steam
       steamParticles.forEach((s, index) => {
         s.update(); s.draw();
         if (s.life <= 0) steamParticles.splice(index, 1);
@@ -445,8 +442,14 @@
 
       ctx.restore();
 
-      ctx.strokeStyle = '#d4af37'; ctx.lineWidth = 14;
+      // 5. Rim
+      ctx.strokeStyle = '#c5a059';
+      ctx.lineWidth = 12;
       ctx.beginPath(); ctx.arc(CENTER_X, CENTER_Y, CUP_RADIUS, 0, Math.PI * 2); ctx.stroke();
+
+      ctx.strokeStyle = 'rgba(0,0,0,0.1)';
+      ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(CENTER_X, CENTER_Y, CUP_RADIUS - 6, 0, Math.PI * 2); ctx.stroke();
 
       requestAnimationFrame(loop);
     }
@@ -584,10 +587,8 @@
       state = 'REVEAL';
       document.getElementById('ui-layer').style.display = 'none';
 
-      // 1. เลื่อน Canvas ขึ้น
       canvas.classList.add('canvas-reveal');
 
-      // 2. แสดงกล่องข้อความ (เลื่อนขึ้นจากล่าง)
       const pBox = document.getElementById('prediction-box');
       pBox.style.display = 'block';
       setTimeout(() => pBox.classList.add('show'), 100);
@@ -611,10 +612,10 @@
         });
         clearTimeout(timeoutId);
         const data = await res.json();
-        document.getElementById('result-text').innerText = data.success ? data.prediction : "Error.";
+        document.getElementById('result-text').innerText = data.success ? data.prediction : "ความมืดบดบัง... โปรดลองใหม่";
       } catch (e) {
-        let msg = "Connection lost.";
-        if (e.name === 'AbortError') msg = "Timeout. Try again.";
+        let msg = "สัญญาณขาดหาย...";
+        if (e.name === 'AbortError') msg = "รอนานเกินไป... ลองใหม่อีกครั้ง";
         document.getElementById('result-text').innerText = msg;
       }
     });
