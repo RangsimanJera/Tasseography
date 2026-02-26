@@ -263,8 +263,8 @@
     </div>
 
     <div id="screen-drink" style="display:none; pointer-events:auto; width:100%; text-align:center;">
-      <div class="tilt-icon">🍵</div>
-      <h2 class="floating-header">ดื่มชา</h2>
+      <div class="tilt-icon" id="drink-icon">🍵</div>
+      <h2 class="floating-header" id="drink-text">ดื่มชา</h2>
       <p class="floating-text">เอียงมือถือเข้าหาตัวเพื่อดื่ม</p>
       <br>
       <button onclick="debugDrink()"
@@ -817,8 +817,31 @@
     // ============================================================
     // LOGIC
     // ============================================================
-    window.selectDrink = (type) => {
+    // ============================================================
+    // LOGIC
+    // ============================================================
+    window.selectDrink = async (type) => {
       drinkType = type;
+
+      if (type === 'TEA') {
+        document.getElementById('drink-icon').innerText = '🍵';
+        document.getElementById('drink-text').innerText = 'ดื่มชา';
+      } else {
+        document.getElementById('drink-icon').innerText = '☕';
+        document.getElementById('drink-text').innerText = 'ดื่มกาแฟคั่ว';
+      }
+
+      if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+        try {
+          const permission = await DeviceOrientationEvent.requestPermission();
+          if (permission !== 'granted') {
+            alert('ต้องอนุญาตให้ใช้เซนเซอร์มือถือถึงจะเขย่าแก้วได้นะครับ!');
+          }
+        } catch (error) {
+          console.error("Sensor permission error:", error);
+        }
+      }
+
       document.getElementById('screen-select').style.display = 'none';
       document.getElementById('screen-brew').style.display = 'block';
       state = 'BREW';
@@ -866,20 +889,16 @@
       document.getElementById('screen-brew').style.display = 'none';
       document.getElementById('screen-drink').style.display = 'block';
       state = 'DRINK';
-      if (typeof DeviceMotionEvent.requestPermission === 'function') {
-        DeviceMotionEvent.requestPermission().then(res => {
-          if (res == 'granted') window.addEventListener('deviceorientation', handleDrinkTilt);
-        });
-      } else {
-        window.addEventListener('deviceorientation', handleDrinkTilt);
-      }
+      window.addEventListener('deviceorientation', handleDrinkTilt);
     }
 
     function handleDrinkTilt(event) {
       if (state !== 'DRINK') return;
       const tilt = event.beta;
-      if (tilt < 60 && liquidLevel > 0) {
-        liquidLevel -= 0.8;
+      
+      // เอียงนิดเดียว หรือยกซด ก็ถือว่าดื่มแล้ว (ดื่มง่ายขึ้น)
+      if (tilt > 75 && liquidLevel > 0) {
+        liquidLevel -= 1; 
         liquidOpacity = liquidLevel / 100;
         if (liquidLevel <= 0) finishDrink();
       }
@@ -989,7 +1008,7 @@
         stillFrames++;
 
         // ===== MATCHING: วิเคราะห์ตำแหน่ง particle จริงและหา symbol ที่ใกล้เคียง =====
-        if (!matchingDone && stillFrames === 5) {
+        if (!matchingDone && stillFrames === 60) {
           const now = Date.now();
           if (now - lastMatchTime > MATCH_COOLDOWN) {
             lastMatchTime = now;
