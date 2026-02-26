@@ -60,7 +60,6 @@
       transition: opacity 0.5s;
     }
 
-    /* CARD STYLE (หน้าเลือก) - อันนี้อ่านง่ายอยู่แล้ว */
     .ghibli-card {
       pointer-events: auto;
       background: #fdfcf0;
@@ -71,19 +70,12 @@
       max-width: 85%;
     }
 
-    /* --- NEW: FLOATING TEXT STYLE (สำหรับข้อความที่ลอยเหนือถ้วย) --- */
     .floating-text {
       color: #ffffff !important;
-      /* สีขาวล้วน */
-      text-shadow:
-        0 2px 4px rgba(0, 0, 0, 0.8),
-        /* เงาลึก */
-        0 0 10px rgba(0, 0, 0, 0.5);
-      /* เรืองแสงรอบๆ */
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8), 0 0 10px rgba(0, 0, 0, 0.5);
       font-weight: 700;
       font-family: 'Mali', cursive;
       background: rgba(0, 0, 0, 0.3);
-      /* รองพื้นจางๆ */
       padding: 8px 20px;
       border-radius: 20px;
       backdrop-filter: blur(2px);
@@ -98,8 +90,7 @@
       margin-bottom: 10px;
     }
 
-    h1,
-    h2 {
+    h1, h2 {
       color: #2c3e50;
       margin: 10px 0;
       font-weight: 700;
@@ -164,23 +155,15 @@
     }
 
     @keyframes float {
-      0% {
-        transform: translateY(0px);
-      }
-
-      50% {
-        transform: translateY(-10px);
-      }
-
-      100% {
-        transform: translateY(0px);
-      }
+      0% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+      100% { transform: translateY(0px); }
     }
 
     #prediction-box {
       display: none;
       pointer-events: auto;
-      position: absolute;
+      position: fixed;
       bottom: 0;
       left: 0;
       width: 100%;
@@ -215,6 +198,41 @@
       margin-bottom: 20px;
       filter: drop-shadow(0 5px 5px rgba(0, 0, 0, 0.2));
     }
+
+    /* Shake intensity indicator */
+    #shake-meter {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 200px;
+      height: 12px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 6px;
+      overflow: hidden;
+      display: none;
+      z-index: 20;
+    }
+    #shake-meter-fill {
+      height: 100%;
+      background: linear-gradient(to right, #a8e063, #ef629f);
+      border-radius: 6px;
+      width: 0%;
+      transition: width 0.1s;
+    }
+
+    #match-hint {
+      position: fixed;
+      top: 45px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: rgba(255,255,255,0.7);
+      font-family: 'Mali', cursive;
+      font-size: 0.85rem;
+      display: none;
+      z-index: 20;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+    }
   </style>
 </head>
 
@@ -223,6 +241,10 @@
   <audio id="audio-pour" loop>
     <source src="pour.mp3" type="audio/mpeg">
   </audio>
+
+  <!-- Shake progress indicator -->
+  <div id="shake-meter"><div id="shake-meter-fill"></div></div>
+  <div id="match-hint"></div>
 
   <canvas id="canvas"></canvas>
 
@@ -246,17 +268,17 @@
       <p class="floating-text">เอียงมือถือเข้าหาตัวเพื่อดื่ม</p>
       <br>
       <button onclick="debugDrink()"
-        style="background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.5); color:#fff; padding:5px 15px; border-radius:15px; margin-top:10px;">ข้าม
-        (Debug)</button>
+        style="background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.5); color:#fff; padding:5px 15px; border-radius:15px; margin-top:10px;">ข้าม (Debug)</button>
     </div>
 
     <div id="screen-shake" style="display:none;">
       <h1 class="floating-header">เขย่าเบาๆ</h1>
-      <p class="floating-text">ให้ใบชากระจายตัว...</p>
       <br>
       <button id="reveal-btn" class="magic-btn"
-        style="font-size:1.3rem; padding:15px 40px; display:none; pointer-events:auto; margin-top:20px;">เปิดคำทำนาย
-        ✨</button>
+        style="font-size:1.3rem; padding:15px 40px; display:none; pointer-events:auto; margin-top:20px;">เปิดคำทำนาย ✨</button>
+      <br>
+      <button onclick="debugShake()"
+        style="background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.4); color:#ccc; padding:5px 15px; border-radius:15px; margin-top:15px; font-family:'Mali',cursive; pointer-events:auto;">เขย่า (Debug)</button>
     </div>
   </div>
 
@@ -265,13 +287,192 @@
     <div style="width: 50px; height: 3px; background: #a8e063; margin: 10px auto 20px; border-radius:2px;"></div>
     <p id="result-text">กำลังสื่อสารกับจิตวิญญาณ...</p>
     <div style="text-align:center; margin-top:30px;">
-      <button onclick="location.reload()" class="magic-btn secondary"
-        style="padding:10px 30px;">เล่นใหม่อีกครั้ง</button>
+      <button onclick="location.reload()" class="magic-btn secondary" style="padding:10px 30px;">เล่นใหม่อีกครั้ง</button>
     </div>
   </div>
 
   <script>
-    // --- SETUP ---
+    // ============================================================
+    // TASSEOGRAPHY SYMBOLS
+    // ============================================================
+    const SYMBOLS = [
+      {
+        name: "Crescent Moon", nameTH: "เสี้ยวพระจันทร์",
+        meaning: "receptivity; lunar; introspection",
+        meaningTH: "การรับรู้ • ความสงบภายใน",
+        draw: (cx, cy, r) => {
+          const pts = [];
+          for (let a = -Math.PI * 0.7; a <= Math.PI * 0.7; a += 0.18)
+            pts.push({ x: cx + r * Math.cos(a), y: cy + r * Math.sin(a) });
+          const inner = r * 0.65, ox = r * 0.3;
+          for (let a = Math.PI * 0.7; a >= -Math.PI * 0.7; a -= 0.18)
+            pts.push({ x: cx + ox + inner * Math.cos(a), y: cy + inner * Math.sin(a) });
+          return pts;
+        }
+      },
+      {
+        name: "Heart", nameTH: "หัวใจ",
+        meaning: "love; romance; home",
+        meaningTH: "ความรัก • ครอบครัว • บ้าน",
+        draw: (cx, cy, r) => {
+          const pts = [];
+          for (let t = 0; t <= Math.PI * 2; t += 0.12) {
+            const x = r * 0.9 * 16 * Math.pow(Math.sin(t), 3) / 16;
+            const y = -r * 0.9 * (13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t)) / 16;
+            pts.push({ x: cx + x, y: cy + y });
+          }
+          return pts;
+        }
+      },
+      {
+        name: "Star", nameTH: "ดาว",
+        meaning: "good luck; excellence; success",
+        meaningTH: "โชคดี • ความสำเร็จ",
+        draw: (cx, cy, r) => {
+          const pts = [], spikes = 5, inner = r * 0.45;
+          for (let i = 0; i < spikes * 2; i++) {
+            const rad = i % 2 === 0 ? r : inner;
+            const a = (i / (spikes * 2)) * Math.PI * 2 - Math.PI / 2;
+            const next_rad = (i + 1) % 2 === 0 ? r : inner;
+            const next_a = ((i + 1) / (spikes * 2)) * Math.PI * 2 - Math.PI / 2;
+            for (let t = 0; t <= 1; t += 0.25) {
+              const ir = rad + (next_rad - rad) * t;
+              const ia = a + (next_a - a) * t;
+              pts.push({ x: cx + ir * Math.cos(ia), y: cy + ir * Math.sin(ia) });
+            }
+          }
+          return pts;
+        }
+      },
+      {
+        name: "Spiral", nameTH: "วนก้นหอย",
+        meaning: "creativity; energy; time for problem solving",
+        meaningTH: "ความคิดสร้างสรรค์ • พลังงาน",
+        draw: (cx, cy, r) => {
+          const pts = [], turns = 2.5;
+          for (let t = 0.1; t <= turns * Math.PI * 2; t += 0.15) {
+            const rad = (t / (turns * Math.PI * 2)) * r;
+            pts.push({ x: cx + rad * Math.cos(t), y: cy + rad * Math.sin(t) });
+          }
+          return pts;
+        }
+      },
+      {
+        name: "Horseshoe", nameTH: "เกือกม้า",
+        meaning: "good luck",
+        meaningTH: "โชคลาภ • ความโชคดี",
+        draw: (cx, cy, r) => {
+          const pts = [];
+          for (let a = Math.PI * 0.1; a <= Math.PI * 0.9; a += 0.15)
+            pts.push({ x: cx + r * Math.cos(a + Math.PI), y: cy - r * 0.85 * Math.sin(a) });
+          for (let y = 0; y <= r * 0.6; y += r * 0.1) pts.push({ x: cx - r * 0.85, y: cy - r * 0.4 + y });
+          for (let y = 0; y <= r * 0.6; y += r * 0.1) pts.push({ x: cx + r * 0.85, y: cy - r * 0.4 + y });
+          return pts;
+        }
+      },
+      {
+        name: "Sun", nameTH: "ดวงอาทิตย์",
+        meaning: "energy; power; success; new beginnings",
+        meaningTH: "พลัง • ความสำเร็จ • การเริ่มต้นใหม่",
+        draw: (cx, cy, r) => {
+          const pts = [];
+          for (let a = 0; a <= Math.PI * 2; a += 0.22)
+            pts.push({ x: cx + r * 0.45 * Math.cos(a), y: cy + r * 0.45 * Math.sin(a) });
+          for (let i = 0; i < 8; i++) {
+            const a = (i / 8) * Math.PI * 2;
+            for (let t = 0.5; t <= 1; t += 0.15)
+              pts.push({ x: cx + r * t * Math.cos(a), y: cy + r * t * Math.sin(a) });
+          }
+          return pts;
+        }
+      },
+      {
+        name: "Anchor", nameTH: "สมอเรือ",
+        meaning: "stability; difficult to change",
+        meaningTH: "ความมั่นคง • รากฐานแข็งแกร่ง",
+        draw: (cx, cy, r) => {
+          const pts = [];
+          for (let a = 0; a <= Math.PI * 2; a += 0.3)
+            pts.push({ x: cx + r*0.2*Math.cos(a), y: cy - r*0.7 + r*0.2*Math.sin(a) });
+          for (let y = -r*0.5; y <= r*0.6; y += r*0.1) pts.push({ x: cx, y: cy + y });
+          for (let x = -r*0.5; x <= r*0.5; x += r*0.1) pts.push({ x: cx + x, y: cy - r*0.35 });
+          for (let a = 0; a <= Math.PI; a += 0.2)
+            pts.push({ x: cx + r*0.55*Math.cos(Math.PI+a), y: cy + r*0.6 + r*0.3*Math.sin(Math.PI+a) });
+          pts.push({ x: cx - r*0.55, y: cy + r*0.3 }, { x: cx + r*0.55, y: cy + r*0.3 });
+          return pts;
+        }
+      },
+      {
+        name: "Cross", nameTH: "กากบาท",
+        meaning: "plus; addition; crossroads",
+        meaningTH: "การเพิ่มพูน • บวก • ทางแยก",
+        draw: (cx, cy, r) => {
+          const pts = [];
+          for (let y = -r*0.8; y <= r*0.8; y += r*0.1) pts.push({ x: cx, y: cy + y });
+          for (let x = -r*0.8; x <= r*0.8; x += r*0.1) pts.push({ x: cx + x, y: cy });
+          return pts;
+        }
+      },
+      {
+        name: "Water / Waves", nameTH: "คลื่นน้ำ",
+        meaning: "sea; unity; travel",
+        meaningTH: "การเดินทาง • ความสามัคคี",
+        draw: (cx, cy, r) => {
+          const pts = [];
+          for (let row = -1; row <= 1; row++)
+            for (let x = -r*0.85; x <= r*0.85; x += r*0.08)
+              pts.push({ x: cx + x, y: cy + row*r*0.3 + Math.sin((x/r)*Math.PI*3)*r*0.12 });
+          return pts;
+        }
+      },
+      {
+        name: "Arrow Up", nameTH: "ลูกศรขึ้น",
+        meaning: "yes; good direction",
+        meaningTH: "ใช่ • ทิศทางที่ดี • ก้าวหน้า",
+        draw: (cx, cy, r) => {
+          const pts = [];
+          for (let y = -r*0.5; y <= r*0.8; y += r*0.1) pts.push({ x: cx, y: cy + y });
+          for (let t = 0; t <= 1; t += 0.1) {
+            pts.push({ x: cx - r*0.45*t, y: cy - r*0.5 + r*0.5*t });
+            pts.push({ x: cx + r*0.45*t, y: cy - r*0.5 + r*0.5*t });
+          }
+          return pts;
+        }
+      },
+      {
+        name: "Eye / Circle", nameTH: "วงกลม",
+        meaning: "totality; bringing together",
+        meaningTH: "ความสมบูรณ์ • รวมเป็นหนึ่ง",
+        draw: (cx, cy, r) => {
+          const pts = [];
+          for (let a = 0; a <= Math.PI*2; a += 0.13)
+            pts.push({ x: cx + r*0.75*Math.cos(a), y: cy + r*0.75*Math.sin(a) });
+          for (let a = 0; a <= Math.PI*2; a += 0.3)
+            pts.push({ x: cx + r*0.15*Math.cos(a), y: cy + r*0.15*Math.sin(a) });
+          return pts;
+        }
+      },
+      {
+        name: "Peace", nameTH: "สัญลักษณ์สันติ",
+        meaning: "peace",
+        meaningTH: "สันติภาพ • ความสงบ",
+        draw: (cx, cy, r) => {
+          const pts = [];
+          for (let a = 0; a <= Math.PI*2; a += 0.18)
+            pts.push({ x: cx + r*0.75*Math.cos(a), y: cy + r*0.75*Math.sin(a) });
+          for (let y = -r*0.75; y <= r*0.75; y += r*0.1) pts.push({ x: cx, y: cy + y });
+          for (let t = 0; t <= 1; t += 0.12) {
+            pts.push({ x: cx - r*0.75*0.7*t, y: cy + r*0.75*0.7*t });
+            pts.push({ x: cx + r*0.75*0.7*t, y: cy + r*0.75*0.7*t });
+          }
+          return pts;
+        }
+      },
+    ];
+
+    // ============================================================
+    // SETUP
+    // ============================================================
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
     canvas.width = window.innerWidth;
@@ -281,17 +482,21 @@
     const CENTER_X = canvas.width / 2;
     const CENTER_Y = canvas.height / 2;
 
-    // State Management
     let state = 'SELECT';
     let drinkType = 'TEA';
     let liquidLevel = 0;
     let liquidOpacity = 0;
     const audioPour = document.getElementById('audio-pour');
 
-    // --- PARTICLES SYSTEM ---
     let particles = [];
     let steamParticles = [];
+    let chosenSymbol = null;
+    let symbolFormProgress = 0;
+    let shakeEnergy = 0;
 
+    // ============================================================
+    // PARTICLES
+    // ============================================================
     class TeaLeaf {
       constructor(type) {
         const angle = Math.random() * Math.PI * 2;
@@ -300,12 +505,17 @@
         this.y = CENTER_Y + r * Math.sin(angle);
         this.type = type;
         this.mass = (type === 'LEAF') ? (2.0 + Math.random() * 2.5) : (0.8 + Math.random());
-
-        this.vx = 0;
-        this.vy = 0;
+        this.vx = 0; this.vy = 0;
         this.friction = 0.93;
         this.rotation = Math.random();
         this.rotationSpeed = 0;
+        this.targetX = null; this.targetY = null;
+        this.hasTarget = false;
+
+        // per-particle noise so they don't all move as one blob
+        this.noiseOffsetX = (Math.random() - 0.5) * 0.8;
+        this.noiseOffsetY = (Math.random() - 0.5) * 0.8;
+        this.noisePhase = Math.random() * Math.PI * 2;
 
         if (drinkType === 'TEA') {
           const green = 50 + Math.random() * 40;
@@ -328,20 +538,54 @@
       update(inputLow) {
         if (state !== 'SHAKE') return;
 
-        let currentFriction = inputLow ? 0.89 : this.friction;
-        this.vx -= (accX * 1.8) / this.mass;
-        this.vy -= (accY * 1.8) / this.mass;
+        this.noisePhase += 0.04;
+
+        // Pull toward target when settling
+        if (this.hasTarget && symbolFormProgress > 0) {
+          const pull = symbolFormProgress * 0.08;
+          this.vx += (this.targetX - this.x) * pull;
+          this.vy += (this.targetY - this.y) * pull;
+        }
+
+        let currentFriction = inputLow ? 0.82 : this.friction;
+
+        // Per-particle variation: each leaf reacts slightly differently
+        const personalScale = 0.6 + this.mass * 0.25;
+        const noiseX = inputLow ? 0 : Math.sin(this.noisePhase + this.noiseOffsetX * 5) * 0.4;
+        const noiseY = inputLow ? 0 : Math.cos(this.noisePhase * 0.7 + this.noiseOffsetY * 5) * 0.4;
+
+        this.vx -= ((accX + noiseX) * 1.8 * personalScale) / this.mass;
+        this.vy -= ((accY + noiseY) * 1.8 * personalScale) / this.mass;
         this.vx += tiltX * 0.05;
         this.vy += tiltY * 0.05;
         this.vx *= currentFriction;
         this.vy *= currentFriction;
+
+        // Repulsion only while actively shaking — stops when input is low so particles can settle
+        if (!inputLow) {
+          const repulseRadius = 14;
+          const repulseForce = 0.35;
+          for (let i = 0; i < particles.length; i += 6) {
+            const other = particles[i];
+            if (other === this) continue;
+            const rx = this.x - other.x;
+            const ry = this.y - other.y;
+            const d2 = rx * rx + ry * ry;
+            if (d2 < repulseRadius * repulseRadius && d2 > 0.01) {
+              const d = Math.sqrt(d2);
+              const f = (repulseRadius - d) / repulseRadius * repulseForce;
+              this.vx += (rx / d) * f;
+              this.vy += (ry / d) * f;
+            }
+          }
+        }
+
         this.x += this.vx;
         this.y += this.vy;
 
         const dx = this.x - CENTER_X;
         const dy = this.y - CENTER_Y;
         const dist = Math.sqrt(dx * dx + dy * dy);
-
         if (dist > CUP_RADIUS) {
           let ang = Math.atan2(dy, dx);
           this.x = CENTER_X + Math.cos(ang) * CUP_RADIUS;
@@ -362,11 +606,8 @@
         ctx.rotate(this.rotation);
         ctx.fillStyle = this.color;
         ctx.beginPath();
-
         ctx.moveTo(this.vertices[0].x, this.vertices[0].y);
-        for (let i = 1; i < this.vertices.length; i++) {
-          ctx.lineTo(this.vertices[i].x, this.vertices[i].y);
-        }
+        for (let i = 1; i < this.vertices.length; i++) ctx.lineTo(this.vertices[i].x, this.vertices[i].y);
         ctx.closePath();
         ctx.fill();
         ctx.restore();
@@ -382,10 +623,7 @@
         this.size = 5 + Math.random() * 15;
         this.life = 150;
       }
-      update() {
-        this.x += this.vx; this.y += this.vy;
-        this.size += 0.15; this.life -= 1;
-      }
+      update() { this.x += this.vx; this.y += this.vy; this.size += 0.15; this.life -= 1; }
       draw() {
         ctx.save();
         ctx.globalAlpha = (this.life / 150) * 0.2;
@@ -397,11 +635,148 @@
       }
     }
 
-    // --- GAME LOOP ---
+    // ============================================================
+    // SYMBOL MATCHING — หัวใจของระบบใหม่
+    // วิเคราะห์ตำแหน่ง particle จริงๆ แล้วหา symbol ที่ match มากที่สุด
+    // ============================================================
+
+    /**
+     * คำนวณ "feature vector" ของกลุ่ม particle:
+     * แบ่ง cup เป็น grid และนับความหนาแน่นในแต่ละเซลล์
+     */
+    function computeDensityGrid(pts, gridSize = 8) {
+      const grid = new Float32Array(gridSize * gridSize);
+      for (const p of pts) {
+        // normalize to [-1, 1]
+        const nx = (p.x - CENTER_X) / CUP_RADIUS;
+        const ny = (p.y - CENTER_Y) / CUP_RADIUS;
+        const gx = Math.floor((nx + 1) / 2 * gridSize);
+        const gy = Math.floor((ny + 1) / 2 * gridSize);
+        if (gx >= 0 && gx < gridSize && gy >= 0 && gy < gridSize) {
+          grid[gy * gridSize + gx]++;
+        }
+      }
+      // normalize
+      const max = Math.max(...grid, 1);
+      for (let i = 0; i < grid.length; i++) grid[i] /= max;
+      return grid;
+    }
+
+    /**
+     * คำนวณ feature vector ของ symbol (จาก draw points)
+     * เพื่อเปรียบเทียบกับ particle pattern
+     */
+    function computeSymbolGrid(symbol, gridSize = 8) {
+      const rawPts = symbol.draw(CENTER_X, CENTER_Y, CUP_RADIUS * 0.75);
+      return computeDensityGrid(rawPts, gridSize);
+    }
+
+    /**
+     * หา symbol ที่ particle pattern ใกล้เคียงที่สุด
+     * ใช้ cosine similarity + spatial moment matching
+     */
+    function findBestMatchingSymbol() {
+      const particlePts = particles.map(p => ({ x: p.x, y: p.y }));
+      const particleGrid = computeDensityGrid(particlePts);
+
+      // คำนวณ spatial moments ของ particles
+      const particleMoments = computeSpatialMoments(particlePts);
+
+      let bestSymbol = null;
+      let bestScore = -Infinity;
+
+      for (const sym of SYMBOLS) {
+        const symGrid = computeSymbolGrid(sym);
+        const symPts = sym.draw(CENTER_X, CENTER_Y, CUP_RADIUS * 0.75);
+        const symMoments = computeSpatialMoments(symPts);
+
+        // Cosine similarity ของ density grid
+        const cosSim = cosineSimilarity(particleGrid, symGrid);
+
+        // Moment similarity
+        const momentSim = momentSimilarity(particleMoments, symMoments);
+
+        // Weighted score
+        const score = cosSim * 0.6 + momentSim * 0.4;
+
+        if (score > bestScore) {
+          bestScore = score;
+          bestSymbol = sym;
+        }
+      }
+
+      return { symbol: bestSymbol, confidence: bestScore };
+    }
+
+    function cosineSimilarity(a, b) {
+      let dot = 0, normA = 0, normB = 0;
+      for (let i = 0; i < a.length; i++) {
+        dot += a[i] * b[i];
+        normA += a[i] * a[i];
+        normB += b[i] * b[i];
+      }
+      if (normA === 0 || normB === 0) return 0;
+      return dot / (Math.sqrt(normA) * Math.sqrt(normB));
+    }
+
+    /**
+     * คำนวณ spatial moments: centroid, variance, skewness ของ x,y
+     */
+    function computeSpatialMoments(pts) {
+      if (pts.length === 0) return { cx: 0, cy: 0, vx: 0, vy: 0, sx: 0, sy: 0, radialVar: 0 };
+
+      const nx = pts.map(p => (p.x - CENTER_X) / CUP_RADIUS);
+      const ny = pts.map(p => (p.y - CENTER_Y) / CUP_RADIUS);
+      const n = pts.length;
+
+      const cx = nx.reduce((s, v) => s + v, 0) / n;
+      const cy = ny.reduce((s, v) => s + v, 0) / n;
+
+      const vx = nx.reduce((s, v) => s + (v - cx)**2, 0) / n;
+      const vy = ny.reduce((s, v) => s + (v - cy)**2, 0) / n;
+
+      const sx = vx > 0 ? nx.reduce((s, v) => s + (v - cx)**3, 0) / n / vx**1.5 : 0;
+      const sy = vy > 0 ? ny.reduce((s, v) => s + (v - cy)**3, 0) / n / vy**1.5 : 0;
+
+      // radial distribution variance (วัดว่ากระจายออกขอบหรือรวมกลาง)
+      const radials = pts.map(p => Math.sqrt((p.x - CENTER_X)**2 + (p.y - CENTER_Y)**2) / CUP_RADIUS);
+      const meanR = radials.reduce((s, v) => s + v, 0) / n;
+      const radialVar = radials.reduce((s, v) => s + (v - meanR)**2, 0) / n;
+
+      return { cx, cy, vx, vy, sx, sy, radialVar };
+    }
+
+    function momentSimilarity(a, b) {
+      const keys = ['cx', 'cy', 'vx', 'vy', 'radialVar'];
+      let sim = 0;
+      for (const k of keys) {
+        const diff = Math.abs(a[k] - b[k]);
+        sim += Math.exp(-diff * 3); // Gaussian similarity
+      }
+      return sim / keys.length;
+    }
+
+    // ============================================================
+    // ASSIGN TARGETS หลังจาก match symbol แล้ว
+    // ============================================================
+    function assignTargetsToSymbol(symbol) {
+      chosenSymbol = symbol;
+      const rawPts = symbol.draw(CENTER_X, CENTER_Y, CUP_RADIUS * 0.75);
+
+      particles.forEach((p, i) => {
+        const tp = rawPts[i % rawPts.length];
+        p.targetX = tp.x + (Math.random() - 0.5) * 18;
+        p.targetY = tp.y + (Math.random() - 0.5) * 18;
+        p.hasTarget = true;
+      });
+    }
+
+    // ============================================================
+    // GAME LOOP
+    // ============================================================
     function loop() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // 1. Cup Base
       ctx.save();
       ctx.beginPath();
       ctx.arc(CENTER_X, CENTER_Y, CUP_RADIUS, 0, Math.PI * 2);
@@ -412,49 +787,36 @@
       ctx.fillStyle = grad; ctx.fill();
       ctx.clip();
 
-      // 2. Leaves
       let isLow = checkSettled();
       particles.forEach(p => {
         if (state === 'SHAKE') p.update(isLow);
         p.draw();
       });
 
-      // 3. Liquid
       if (liquidOpacity > 0) {
-        if (drinkType === 'TEA') {
-          ctx.fillStyle = `rgba(100, 130, 50, ${liquidOpacity * 0.95})`;
-        } else {
-          ctx.fillStyle = `rgba(40, 20, 10, ${liquidOpacity * 0.95})`;
-        }
+        if (drinkType === 'TEA') ctx.fillStyle = `rgba(100, 130, 50, ${liquidOpacity * 0.95})`;
+        else ctx.fillStyle = `rgba(40, 20, 10, ${liquidOpacity * 0.95})`;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
-
         ctx.fillStyle = `rgba(255,255,255, ${liquidOpacity * 0.1})`;
         ctx.beginPath();
-        ctx.arc(CENTER_X - CUP_RADIUS * 0.3, CENTER_Y - CUP_RADIUS * 0.3, CUP_RADIUS * 0.1, 0, Math.PI * 2);
+        ctx.arc(CENTER_X - CUP_RADIUS*0.3, CENTER_Y - CUP_RADIUS*0.3, CUP_RADIUS*0.1, 0, Math.PI*2);
         ctx.fill();
       }
 
-      // 4. Steam
-      steamParticles.forEach((s, index) => {
-        s.update(); s.draw();
-        if (s.life <= 0) steamParticles.splice(index, 1);
-      });
-
+      steamParticles.forEach((s, i) => { s.update(); s.draw(); if (s.life <= 0) steamParticles.splice(i, 1); });
       ctx.restore();
 
-      // 5. Rim
-      ctx.strokeStyle = '#c5a059';
-      ctx.lineWidth = 12;
+      ctx.strokeStyle = '#c5a059'; ctx.lineWidth = 12;
       ctx.beginPath(); ctx.arc(CENTER_X, CENTER_Y, CUP_RADIUS, 0, Math.PI * 2); ctx.stroke();
-
-      ctx.strokeStyle = 'rgba(0,0,0,0.1)';
-      ctx.lineWidth = 2;
+      ctx.strokeStyle = 'rgba(0,0,0,0.1)'; ctx.lineWidth = 2;
       ctx.beginPath(); ctx.arc(CENTER_X, CENTER_Y, CUP_RADIUS - 6, 0, Math.PI * 2); ctx.stroke();
 
       requestAnimationFrame(loop);
     }
 
-    // --- LOGIC ---
+    // ============================================================
+    // LOGIC
+    // ============================================================
     window.selectDrink = (type) => {
       drinkType = type;
       document.getElementById('screen-select').style.display = 'none';
@@ -485,9 +847,7 @@
           liquidOpacity = liquidLevel / 100;
           brewBtn.innerText = `${Math.floor(liquidLevel)}%`;
           if (Math.random() > 0.5) steamParticles.push(new Steam());
-        } else {
-          finishBrew();
-        }
+        } else { finishBrew(); }
       }, 30);
     };
 
@@ -529,24 +889,29 @@
       let drinkInt = setInterval(() => {
         liquidLevel -= 5;
         liquidOpacity = liquidLevel / 100;
-        if (liquidLevel <= 0) {
-          clearInterval(drinkInt);
-          finishDrink();
-        }
+        if (liquidLevel <= 0) { clearInterval(drinkInt); finishDrink(); }
       }, 20);
-    }
+    };
 
     function finishDrink() {
       window.removeEventListener('deviceorientation', handleDrinkTilt);
       document.getElementById('screen-drink').style.display = 'none';
       document.getElementById('screen-shake').style.display = 'block';
       state = 'SHAKE';
+
+      // แสดง shake meter
+      document.getElementById('shake-meter').style.display = 'block';
+      document.getElementById('match-hint').style.display = 'block';
+
       window.addEventListener('devicemotion', handleMotion);
       window.addEventListener('deviceorientation', handleOrientation);
     }
 
+    // ============================================================
     // SHAKE SENSORS
+    // ============================================================
     let accX = 0, accY = 0, tiltX = 0, tiltY = 0;
+    let prevAccX = 0, prevAccY = 0;
 
     function handleMotion(e) {
       let acc = e.acceleration || e.accelerationIncludingGravity;
@@ -554,6 +919,8 @@
         let rx = acc.x || 0; let ry = acc.y || 0;
         accX = (Math.abs(rx) < 0.5) ? 0 : rx;
         accY = (Math.abs(ry) < 0.5) ? 0 : ry;
+        shakeEnergy = Math.abs(accX - prevAccX) + Math.abs(accY - prevAccY);
+        prevAccX = accX; prevAccY = accY;
       }
     }
 
@@ -562,31 +929,113 @@
       tiltY = e.beta || 0;
     }
 
+    window.debugShake = () => {
+      // Give each particle an initial random kick to break the clump
+      particles.forEach(p => {
+        const angle = Math.random() * Math.PI * 2;
+        const force = 8 + Math.random() * 10;
+        p.vx += Math.cos(angle) * force;
+        p.vy += Math.sin(angle) * force;
+      });
+
+      let t = 0;
+      const iv = setInterval(() => {
+        // Oscillating shake — alternating directions like real hand shake
+        const phase = t * 0.4;
+        accX = Math.sin(phase) * 10 + (Math.random() - 0.5) * 6;
+        accY = Math.cos(phase * 1.3) * 10 + (Math.random() - 0.5) * 6;
+        shakeEnergy = 10;
+        t++;
+        if (t > 40) { clearInterval(iv); accX = 0; accY = 0; shakeEnergy = 0; }
+      }, 40);
+    };
+
+    // ============================================================
+    // SETTLE / SYMBOL MATCHING LOGIC (ใหม่)
+    // ============================================================
     let stillFrames = 0;
     const revealBtn = document.getElementById('reveal-btn');
 
+    let hasShaken = false;
+    let totalShakeEnergy = 0;
+    const SHAKE_THRESHOLD = 80;
+
+    // State สำหรับการ matching
+    let matchingDone = false;
+    let lastMatchTime = 0;
+    const MATCH_COOLDOWN = 500; // ms ระหว่างการ re-match
+
     function checkSettled() {
+      if (state !== 'SHAKE') return true;
       let force = Math.abs(accX) + Math.abs(accY);
       let isInputLow = force < 2.5;
+
+      if (!isInputLow) {
+        totalShakeEnergy += shakeEnergy;
+        if (totalShakeEnergy >= SHAKE_THRESHOLD) {
+          hasShaken = true;
+          matchingDone = false; // reset matching เพื่อให้ match ใหม่เมื่อหยุด
+        }
+        // อัปเดต shake meter
+        const pct = Math.min(totalShakeEnergy / SHAKE_THRESHOLD * 100, 100);
+        document.getElementById('shake-meter-fill').style.width = pct + '%';
+      }
+
       let vel = 0;
       for (let i = 0; i < particles.length; i += 10) vel += Math.abs(particles[i].vx) + Math.abs(particles[i].vy);
       vel /= (particles.length / 10);
 
-      if (isInputLow && vel < 0.8) stillFrames++;
-      else {
-        stillFrames = 0;
-        revealBtn.style.display = 'none';
+      if (hasShaken && isInputLow && vel < 1.5) {
+        stillFrames++;
+
+        // ===== MATCHING: วิเคราะห์ตำแหน่ง particle จริงและหา symbol ที่ใกล้เคียง =====
+        if (!matchingDone && stillFrames === 5) {
+          const now = Date.now();
+          if (now - lastMatchTime > MATCH_COOLDOWN) {
+            lastMatchTime = now;
+            const { symbol, confidence } = findBestMatchingSymbol();
+            assignTargetsToSymbol(symbol);
+            matchingDone = true;
+
+            // แสดง hint
+            const hint = document.getElementById('match-hint');
+            hint.textContent = `✨ เห็น ${symbol.nameTH} อยู่...`;
+          }
+        }
+
+        if (symbolFormProgress < 1 && matchingDone)
+          symbolFormProgress = Math.min(1, symbolFormProgress + 0.004);
+
+      } else {
+        if (!hasShaken || !isInputLow) {
+          stillFrames = 0;
+          revealBtn.style.display = 'none';
+          if (!isInputLow) {
+            // user เขย่าใหม่ — reset matching เพื่อ match อีกครั้งเมื่อหยุด
+            matchingDone = false;
+            symbolFormProgress = Math.max(0, symbolFormProgress - 0.02);
+            // ล้าง target เก่า
+            particles.forEach(p => { p.hasTarget = false; });
+            // ซ่อน hint ชั่วคราว
+            document.getElementById('match-hint').textContent = 'กำลังอ่านรูปร่าง...';
+          }
+        }
+        if (hasShaken && !isInputLow)
+          symbolFormProgress = Math.max(0, symbolFormProgress - 0.02);
       }
 
-      if (stillFrames > 30) revealBtn.style.display = 'block';
+      if (hasShaken && stillFrames > 30) revealBtn.style.display = 'block';
       return isInputLow;
     }
 
+    // ============================================================
     // REVEAL
+    // ============================================================
     revealBtn.addEventListener('click', async () => {
       state = 'REVEAL';
       document.getElementById('ui-layer').style.display = 'none';
-
+      document.getElementById('shake-meter').style.display = 'none';
+      document.getElementById('match-hint').style.display = 'none';
       canvas.classList.add('canvas-reveal');
 
       const pBox = document.getElementById('prediction-box');
@@ -600,6 +1049,14 @@
       tCtx.drawImage(canvas, 0, 0, 512, 512);
       const base64 = tCanvas.toDataURL('image/jpeg', 0.6).split(',')[1];
 
+      if (chosenSymbol) {
+        document.getElementById('result-text').innerHTML =
+          `<strong>✨ สัญลักษณ์ที่ปรากฏ: ${chosenSymbol.nameTH}</strong><br>` +
+          `<em>(${chosenSymbol.name})</em><br><br>` +
+          `ความหมาย: ${chosenSymbol.meaningTH}<br><br>` +
+          `กำลังสื่อสารกับจิตวิญญาณ...`;
+      }
+
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 60000);
 
@@ -607,20 +1064,36 @@
         const res = await fetch('/api/predict', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ imageBase64: base64 }),
+          body: JSON.stringify({
+            imageBase64: base64,
+            symbolName: chosenSymbol ? chosenSymbol.name : '',
+            symbolMeaning: chosenSymbol ? chosenSymbol.meaning : ''
+          }),
           signal: controller.signal
         });
         clearTimeout(timeoutId);
         const data = await res.json();
-        document.getElementById('result-text').innerText = data.success ? data.prediction : "ความมืดบดบัง... โปรดลองใหม่";
+        if (data.success) {
+          document.getElementById('result-text').innerHTML =
+            `<strong>✨ สัญลักษณ์: ${chosenSymbol ? chosenSymbol.nameTH : ''}</strong><br><br>` +
+            data.prediction;
+        } else {
+          document.getElementById('result-text').innerText = "ความมืดบดบัง... โปรดลองใหม่";
+        }
       } catch (e) {
+        clearTimeout(timeoutId);
         let msg = "สัญญาณขาดหาย...";
         if (e.name === 'AbortError') msg = "รอนานเกินไป... ลองใหม่อีกครั้ง";
-        document.getElementById('result-text').innerText = msg;
+        if (chosenSymbol) {
+          document.getElementById('result-text').innerHTML =
+            `<strong>✨ สัญลักษณ์ที่ปรากฏ: ${chosenSymbol.nameTH}</strong><br><br>` +
+            `${chosenSymbol.meaningTH}<br><br><em>${msg}</em>`;
+        } else {
+          document.getElementById('result-text').innerText = msg;
+        }
       }
     });
 
   </script>
 </body>
-
 </html>
