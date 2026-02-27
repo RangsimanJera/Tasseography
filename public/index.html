@@ -1061,13 +1061,6 @@
       pBox.style.display = 'block';
       setTimeout(() => pBox.classList.add('show'), 100);
 
-      const tCanvas = document.createElement('canvas');
-      tCanvas.width = 512; tCanvas.height = 512;
-      const tCtx = tCanvas.getContext('2d');
-      tCtx.fillStyle = "#fff"; tCtx.fillRect(0, 0, 512, 512);
-      tCtx.drawImage(canvas, 0, 0, 512, 512);
-      const base64 = tCanvas.toDataURL('image/jpeg', 0.6).split(',')[1];
-
       if (chosenSymbol) {
         document.getElementById('result-text').innerHTML =
           `<strong>✨ สัญลักษณ์ที่ปรากฏ: ${chosenSymbol.nameTH}</strong><br>` +
@@ -1075,6 +1068,9 @@
           `ความหมาย: ${chosenSymbol.meaningTH}<br><br>` +
           `กำลังสื่อสารกับจิตวิญญาณ...`;
       }
+
+      // เก็บคำถามที่ผู้เล่นอยากรู้ เพื่อส่งไปช่วย AI ผูกคำทำนายให้ตรงกับสิ่งที่ถาม
+      const userQuestion = document.getElementById('user-question')?.value || '';
 
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 60000);
@@ -1084,9 +1080,11 @@
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            imageBase64: base64,
             symbolName: chosenSymbol ? chosenSymbol.name : '',
-            symbolMeaning: chosenSymbol ? chosenSymbol.meaning : ''
+            symbolMeaning: chosenSymbol ? chosenSymbol.meaning : '',
+            symbolNameTH: chosenSymbol ? chosenSymbol.nameTH : '',
+            symbolMeaningTH: chosenSymbol ? chosenSymbol.meaningTH : '',
+            userQuestion
           }),
           signal: controller.signal
         });
