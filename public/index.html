@@ -5,43 +5,64 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>CPE Tasseography</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
-    href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,700;1,400&family=Mali:wght@400;600&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,700;1,600&family=Mali:wght@400;600&display=swap"
     rel="stylesheet">
 
   <style>
+    :root {
+      --bg-cream: #FFFDF5;
+      --bg-warm: #FFE4C4;
+      --porcelain: #FFFFFF;
+      --gold: #D4AF37;
+      --gold-light: #F4C430;
+      --tea-green: #88B04B;
+      --coffee-brown: #4E342E;
+      --text-brown: #5D4037;
+      --text-light: #8D6E63;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       margin: 0;
       overflow: hidden;
-      background: linear-gradient(to bottom, #1a1a2e 0%, #16213e 40%, #243b55 100%);
-      color: #4a3b2a;
+      background: radial-gradient(circle at center, var(--bg-cream), var(--bg-warm));
+      color: var(--text-brown);
       font-family: 'Crimson Pro', serif;
       touch-action: none;
       user-select: none;
       -webkit-user-select: none;
     }
 
+    /* Pattern overlay */
     body::before {
       content: "";
       position: absolute;
+      top: 0;
+      left: 0;
       width: 100%;
       height: 100%;
       background-image:
-        radial-gradient(white, rgba(255, 255, 255, .2) 2px, transparent 3px),
-        radial-gradient(white, rgba(255, 255, 255, .15) 1px, transparent 2px);
-      background-size: 550px 550px, 350px 350px;
-      opacity: 0.6;
+        radial-gradient(var(--gold) 1px, transparent 1px);
+      background-size: 40px 40px;
+      opacity: 0.1;
       z-index: -1;
+      pointer-events: none;
     }
 
     canvas {
       display: block;
-      filter: drop-shadow(0 10px 40px rgba(0, 0, 0, 0.5));
-      transition: transform 1s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+      filter: drop-shadow(0 20px 30px rgba(93, 64, 55, 0.2));
+      transition: transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
 
     .canvas-reveal {
-      transform: translateY(-20%) scale(0.9);
+      transform: translateY(-15%) scale(0.9);
     }
 
     #ui-layer {
@@ -56,126 +77,164 @@
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      text-align: center;
-      transition: opacity 0.5s;
+      transition: opacity 0.4s;
     }
 
-    .ghibli-card {
+    /* PORCELAIN CARD STYLE */
+    .porcelain-card {
       pointer-events: auto;
-      background: #fdfcf0;
-      padding: 30px 40px;
-      border-radius: 20px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-      border: 2px solid #e0d0a0;
-      max-width: 85%;
+      background: var(--porcelain);
+      border: 3px double var(--gold);
+      border-radius: 25px;
+      padding: 30px 25px;
+      width: 85%;
+      max-width: 380px;
+      box-shadow: 0 10px 25px rgba(93, 64, 55, 0.15);
+      text-align: center;
+      position: relative;
     }
 
-    .floating-text {
-      color: #ffffff !important;
-      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8), 0 0 10px rgba(0, 0, 0, 0.5);
+    .porcelain-card::after,
+    .porcelain-card::before {
+      content: "❀";
+      position: absolute;
+      font-size: 1.5rem;
+      color: var(--gold);
+      opacity: 0.5;
+    }
+
+    .porcelain-card::after {
+      top: 10px;
+      right: 15px;
+    }
+
+    .porcelain-card::before {
+      bottom: 10px;
+      left: 15px;
+    }
+
+    h1,
+    h2 {
+      font-family: 'Crimson Pro', serif;
       font-weight: 700;
-      font-family: 'Mali', cursive;
-      background: rgba(0, 0, 0, 0.3);
-      padding: 8px 20px;
-      border-radius: 20px;
-      backdrop-filter: blur(2px);
-      display: inline-block;
-      margin-bottom: 20px;
-    }
-
-    .floating-header {
-      color: #eecda3 !important;
-      text-shadow: 2px 2px 5px #2c3e50;
-      font-size: 2.5rem;
-      margin-bottom: 10px;
-    }
-
-    h1, h2 {
-      color: #2c3e50;
-      margin: 10px 0;
-      font-weight: 700;
+      font-style: italic;
+      margin: 0 0 10px 0;
+      color: var(--text-brown);
     }
 
     p {
-      color: #5d6d7e;
+      color: var(--text-light);
+      font-family: 'Mali', cursive;
       font-size: 1.1rem;
       margin-bottom: 25px;
-      font-family: 'Mali', cursive;
-    }
-
-    .magic-btn {
-      display: inline-block;
-      padding: 12px 30px;
-      margin: 10px;
-      background: linear-gradient(to right, #a8e063, #56ab2f);
-      border: none;
-      border-radius: 50px;
-      color: white;
-      font-family: 'Mali', cursive;
-      font-size: 1.1rem;
-      font-weight: bold;
-      cursor: pointer;
-      box-shadow: 0 5px 15px rgba(86, 171, 47, 0.4);
-    }
-
-    .magic-btn.secondary {
-      background: linear-gradient(to right, #eecda3, #ef629f);
     }
 
     input[type="text"] {
-      background: rgba(0, 0, 0, 0.05);
-      border: none;
-      border-bottom: 2px solid #a8e063;
-      color: #2c3e50;
-      font-size: 1.2rem;
-      text-align: center;
-      margin-bottom: 20px;
-      padding: 10px;
-      outline: none;
-      font-family: 'Mali', cursive;
       width: 100%;
+      background: #FFFBF0;
+      border: 1px solid var(--gold);
+      border-radius: 15px;
+      padding: 12px;
+      color: var(--text-brown);
+      font-family: 'Mali', cursive;
+      font-size: 1.1rem;
+      margin-bottom: 20px;
+      outline: none;
+      text-align: center;
+    }
+
+    /* DRINK BUTTONS */
+    .tea-btn {
+      display: inline-block;
+      border: none;
+      background: linear-gradient(to bottom, #fff, #f9f9f9);
+      min-width: 180px;
+      padding: 12px 30px;
+      margin: 8px;
+      border-radius: 50px;
+      cursor: pointer;
+      font-family: 'Mali', cursive;
+      font-weight: 600;
+      font-size: 1rem;
+      color: var(--text-brown);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1), inset 0 0 0 2px var(--gold);
+      transition: transform 0.2s;
+    }
+
+    .tea-btn:active {
+      transform: scale(0.95);
+    }
+
+    .tea-btn.green {
+      color: #558B2F;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1), inset 0 0 0 2px #AED581;
+    }
+
+    .tea-btn.coffee {
+      color: #4E342E;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1), inset 0 0 0 2px #8D6E63;
+    }
+
+    /* BREW BUTTON */
+    #brew-btn-container {
+      position: relative;
+      width: 130px;
+      height: 130px;
+      margin: 0 auto;
     }
 
     #brew-btn {
-      width: 100px;
-      height: 100px;
+      width: 100%;
+      height: 100%;
       border-radius: 50%;
-      background: radial-gradient(circle at 30% 30%, #ffecd2, #fcb69f);
-      border: 4px solid #fff;
-      box-shadow: 0 0 20px rgba(252, 182, 159, 0.6);
-      color: #d35400;
+      background: white;
+      border: 4px solid var(--gold);
+      color: var(--text-brown);
+      font-family: 'Crimson Pro';
       font-weight: bold;
-      font-size: 1.2rem;
-      cursor: pointer;
+      font-size: 1.3rem;
       display: flex;
       align-items: center;
       justify-content: center;
-      margin: 0 auto;
-      animation: float 3s ease-in-out infinite;
+      cursor: pointer;
+      transition: 0.2s;
     }
 
-    @keyframes float {
-      0% { transform: translateY(0px); }
-      50% { transform: translateY(-10px); }
-      100% { transform: translateY(0px); }
+    #brew-btn.active {
+      transform: scale(0.95);
+      background: #FFF8E1;
     }
 
+    .progress-ring {
+      position: absolute;
+      top: -5px;
+      left: -5px;
+      transform: rotate(-90deg);
+      pointer-events: none;
+    }
+
+    .progress-ring__circle {
+      transition: 0.1s stroke-dashoffset;
+      stroke: var(--gold);
+    }
+
+    /* PREDICTION BOX */
     #prediction-box {
       display: none;
       pointer-events: auto;
       position: fixed;
       bottom: 0;
       left: 0;
-      width: 100%;
-      background: #fdfcf0 url('https://www.transparenttextures.com/patterns/cream-paper.png');
-      padding: 30px 20px;
-      box-sizing: border-box;
-      border-top: 5px solid #a8e063;
-      min-height: 50vh;
-      z-index: 100;
+      right: 0;
+      height: 55vh;
+      background: #FFFDF9;
+      border-top: 5px solid var(--gold);
       border-radius: 30px 30px 0 0;
+      box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.1);
+      padding: 30px 25px;
       transform: translateY(100%);
-      transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      transition: transform 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+      z-index: 100;
     }
 
     #prediction-box.show {
@@ -185,53 +244,69 @@
     #result-text {
       font-size: 1.2rem;
       line-height: 1.8;
-      border-left: 3px solid #ef629f;
+      color: var(--text-brown);
+      border-left: 3px solid var(--gold);
       padding-left: 15px;
-      margin: 20px;
-      text-align: left;
+      margin: 15px 0;
       font-family: 'Mali', cursive;
     }
 
-    .tilt-icon {
-      font-size: 4rem;
-      display: block;
-      margin-bottom: 20px;
-      filter: drop-shadow(0 5px 5px rgba(0, 0, 0, 0.2));
+    /* UTILS */
+    .float-text {
+      background: rgba(255, 255, 255, 0.8);
+      padding: 8px 20px;
+      border-radius: 20px;
+      border: 1px solid var(--gold);
+      font-family: 'Mali', cursive;
     }
 
-    /* Shake intensity indicator */
     #shake-meter {
       position: fixed;
       top: 20px;
       left: 50%;
       transform: translateX(-50%);
       width: 200px;
-      height: 12px;
-      background: rgba(255,255,255,0.2);
-      border-radius: 6px;
-      overflow: hidden;
+      height: 10px;
+      background: rgba(255, 255, 255, 0.6);
+      border: 1px solid var(--gold);
+      border-radius: 10px;
       display: none;
       z-index: 20;
+      overflow: hidden;
     }
+
     #shake-meter-fill {
       height: 100%;
-      background: linear-gradient(to right, #a8e063, #ef629f);
-      border-radius: 6px;
       width: 0%;
+      background: linear-gradient(90deg, var(--tea-green), var(--gold));
       transition: width 0.1s;
     }
 
     #match-hint {
       position: fixed;
-      top: 45px;
-      left: 50%;
-      transform: translateX(-50%);
-      color: rgba(255,255,255,0.7);
+      top: 40px;
+      width: 100%;
+      text-align: center;
+      color: var(--text-brown);
       font-family: 'Mali', cursive;
-      font-size: 0.85rem;
       display: none;
       z-index: 20;
-      text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+      text-shadow: 0 0 5px white;
+    }
+
+    .debug-btn {
+      position: fixed;
+      bottom: 10px;
+      right: 10px;
+      font-size: 0.7rem;
+      padding: 5px 10px;
+      background: rgba(0, 0, 0, 0.1);
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      cursor: pointer;
+      pointer-events: auto;
+      z-index: 200;
+      color: #555;
     }
   </style>
 </head>
@@ -242,58 +317,81 @@
     <source src="pour.mp3" type="audio/mpeg">
   </audio>
 
-  <!-- Shake progress indicator -->
-  <div id="shake-meter"><div id="shake-meter-fill"></div></div>
+  <div id="shake-meter">
+    <div id="shake-meter-fill"></div>
+  </div>
   <div id="match-hint"></div>
 
   <canvas id="canvas"></canvas>
 
   <div id="ui-layer">
-    <div id="screen-select" class="ghibli-card">
-      <h2>ร้านน้ำชาแห่งโชคชะตา</h2>
-      <input type="text" id="user-question" placeholder="พิมพ์สิ่งที่อยากรู้..." autocomplete="off">
-      <p>เลือกเครื่องดื่มของคุณ</p>
-      <button class="magic-btn" onclick="selectDrink('TEA')">🍃 ใบชาเขียว</button>
-      <button class="magic-btn secondary" onclick="selectDrink('COFFEE')">☕ กาแฟคั่ว</button>
+
+    <div id="screen-select" class="porcelain-card">
+      <h2>CPE Tea Room</h2>
+      <p>เลือกเครื่องดื่มเพื่อทำนายชะตา</p>
+
+      <input type="text" id="user-question" placeholder="พิมพ์เรื่องที่อยากรู้..." autocomplete="off">
+
+      <div style="margin-top:10px;">
+        <button class="tea-btn green" onclick="selectDrink('TEA')">🍃 ใบชาเขียว</button>
+        <button class="tea-btn coffee" onclick="selectDrink('COFFEE')">☕ กาแฟคั่ว</button>
+      </div>
     </div>
 
-    <div id="screen-brew" style="display:none; pointer-events:auto;">
-      <p class="floating-text">กดค้างเพื่อรินน้ำร้อน</p>
-      <div id="brew-btn">HOLD</div>
+    <div id="screen-brew" style="display:none; pointer-events:auto; text-align:center;">
+      <p class="float-text">กดค้างเพื่อรินน้ำร้อน</p>
+      <div style="height:20px;"></div>
+      <div id="brew-btn-container">
+        <svg class="progress-ring" width="140" height="140">
+          <circle class="progress-ring__circle" stroke-width="6" fill="transparent" r="60" cx="70" cy="70"
+            stroke-dasharray="377" stroke-dashoffset="377" />
+        </svg>
+        <div id="brew-btn">POUR</div>
+      </div>
     </div>
 
-    <div id="screen-drink" style="display:none; pointer-events:auto; width:100%; text-align:center;">
-      <div class="tilt-icon" id="drink-icon">🍵</div>
-      <h2 class="floating-header" id="drink-text">ดื่มชา</h2>
-      <p class="floating-text">เอียงมือถือเข้าหาตัวเพื่อดื่ม</p>
-      <br>
-      <button onclick="debugDrink()"
-        style="background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.5); color:#fff; padding:5px 15px; border-radius:15px; margin-top:10px;">ข้าม (Debug)</button>
+    <div id="screen-drink" style="display:none; pointer-events:auto; width:100%; text-align:center; justify-items: center;">
+      <div style="font-size:5rem; margin-bottom:15px;" id="drink-icon">🍵</div>
+      <h2>Sip Slowly</h2>
+      <p class="float-text">เอียงมือถือเพื่อดื่มให้หมดถ้วย</p>
+
+      <button class="debug-btn" onclick="debugDrink()">[Debug: Drink]</button>
     </div>
 
-    <div id="screen-shake" style="display:none;">
-      <h1 class="floating-header">เขย่าเบาๆ</h1>
-      <br>
-      <button id="reveal-btn" class="magic-btn"
-        style="font-size:1.3rem; padding:15px 40px; display:none; pointer-events:auto; margin-top:20px;">เปิดคำทำนาย ✨</button>
-      <br>
-      <button onclick="debugShake()"
-        style="background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.4); color:#ccc; padding:5px 15px; border-radius:15px; margin-top:15px; font-family:'Mali',cursive; pointer-events:auto;">เขย่า (Debug)</button>
+    <div id="screen-shake" style="display:none; text-align:center;">
+      <h1>Shake Gently</h1>
+      <p class="float-text">เขย่าเบา ๆ ให้ตะกอนเรียงตัว</p>
+
+      <div style="margin-top:40px;">
+        <button id="reveal-btn" class="tea-btn green"
+          style="display:none; pointer-events:auto; font-size:1.2rem; padding:15px 40px;">
+          ✨ อ่านคำทำนาย ✨
+        </button>
+      </div>
+
+      <button class="debug-btn" onclick="debugShake()">[Debug: Shake]</button>
     </div>
   </div>
 
   <div id="prediction-box">
-    <h3 style="text-align:center; font-family:'Crimson Pro'; font-size:1.5rem; color:#d35400;">คำทำนายจากก้นถ้วย</h3>
-    <div style="width: 50px; height: 3px; background: #a8e063; margin: 10px auto 20px; border-radius:2px;"></div>
-    <p id="result-text">กำลังสื่อสารกับจิตวิญญาณ...</p>
-    <div style="text-align:center; margin-top:30px;">
-      <button onclick="location.reload()" class="magic-btn secondary" style="padding:10px 30px;">เล่นใหม่อีกครั้ง</button>
+    <div style="height: 100%; overflow-y: auto;">
+      <div style="width: 50px; height: 4px; background: var(--gold); margin: 0 auto 20px; border-radius: 2px;"></div>
+      <h3 style="text-align:center; font-family:'Crimson Pro'; color:var(--text-brown); font-size:1.5rem;">The Prediction
+      </h3>
+
+      <div id="result-text">กำลังสื่อสารกับจิตวิญญาณ...</div>
+
+      <div style="text-align:center; margin-top:30px;">
+        <button onclick="location.reload()" class="tea-btn coffee">
+          เล่นใหม่อีกครั้ง
+        </button>
+      </div>
     </div>
   </div>
 
   <script>
     // ============================================================
-    // TASSEOGRAPHY SYMBOLS
+    // SYMBOLS (From User Request)
     // ============================================================
     const SYMBOLS = [
       {
@@ -318,7 +416,7 @@
           const pts = [];
           for (let t = 0; t <= Math.PI * 2; t += 0.12) {
             const x = r * 0.9 * 16 * Math.pow(Math.sin(t), 3) / 16;
-            const y = -r * 0.9 * (13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t)) / 16;
+            const y = -r * 0.9 * (13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t)) / 16;
             pts.push({ x: cx + x, y: cy + y });
           }
           return pts;
@@ -393,12 +491,12 @@
         draw: (cx, cy, r) => {
           const pts = [];
           for (let a = 0; a <= Math.PI * 2; a += 0.3)
-            pts.push({ x: cx + r*0.2*Math.cos(a), y: cy - r*0.7 + r*0.2*Math.sin(a) });
-          for (let y = -r*0.5; y <= r*0.6; y += r*0.1) pts.push({ x: cx, y: cy + y });
-          for (let x = -r*0.5; x <= r*0.5; x += r*0.1) pts.push({ x: cx + x, y: cy - r*0.35 });
+            pts.push({ x: cx + r * 0.2 * Math.cos(a), y: cy - r * 0.7 + r * 0.2 * Math.sin(a) });
+          for (let y = -r * 0.5; y <= r * 0.6; y += r * 0.1) pts.push({ x: cx, y: cy + y });
+          for (let x = -r * 0.5; x <= r * 0.5; x += r * 0.1) pts.push({ x: cx + x, y: cy - r * 0.35 });
           for (let a = 0; a <= Math.PI; a += 0.2)
-            pts.push({ x: cx + r*0.55*Math.cos(Math.PI+a), y: cy + r*0.6 + r*0.3*Math.sin(Math.PI+a) });
-          pts.push({ x: cx - r*0.55, y: cy + r*0.3 }, { x: cx + r*0.55, y: cy + r*0.3 });
+            pts.push({ x: cx + r * 0.55 * Math.cos(Math.PI + a), y: cy + r * 0.6 + r * 0.3 * Math.sin(Math.PI + a) });
+          pts.push({ x: cx - r * 0.55, y: cy + r * 0.3 }, { x: cx + r * 0.55, y: cy + r * 0.3 });
           return pts;
         }
       },
@@ -408,8 +506,8 @@
         meaningTH: "การเพิ่มพูน • บวก • ทางแยก",
         draw: (cx, cy, r) => {
           const pts = [];
-          for (let y = -r*0.8; y <= r*0.8; y += r*0.1) pts.push({ x: cx, y: cy + y });
-          for (let x = -r*0.8; x <= r*0.8; x += r*0.1) pts.push({ x: cx + x, y: cy });
+          for (let y = -r * 0.8; y <= r * 0.8; y += r * 0.1) pts.push({ x: cx, y: cy + y });
+          for (let x = -r * 0.8; x <= r * 0.8; x += r * 0.1) pts.push({ x: cx + x, y: cy });
           return pts;
         }
       },
@@ -420,8 +518,8 @@
         draw: (cx, cy, r) => {
           const pts = [];
           for (let row = -1; row <= 1; row++)
-            for (let x = -r*0.85; x <= r*0.85; x += r*0.08)
-              pts.push({ x: cx + x, y: cy + row*r*0.3 + Math.sin((x/r)*Math.PI*3)*r*0.12 });
+            for (let x = -r * 0.85; x <= r * 0.85; x += r * 0.08)
+              pts.push({ x: cx + x, y: cy + row * r * 0.3 + Math.sin((x / r) * Math.PI * 3) * r * 0.12 });
           return pts;
         }
       },
@@ -431,10 +529,10 @@
         meaningTH: "ใช่ • ทิศทางที่ดี • ก้าวหน้า",
         draw: (cx, cy, r) => {
           const pts = [];
-          for (let y = -r*0.5; y <= r*0.8; y += r*0.1) pts.push({ x: cx, y: cy + y });
+          for (let y = -r * 0.5; y <= r * 0.8; y += r * 0.1) pts.push({ x: cx, y: cy + y });
           for (let t = 0; t <= 1; t += 0.1) {
-            pts.push({ x: cx - r*0.45*t, y: cy - r*0.5 + r*0.5*t });
-            pts.push({ x: cx + r*0.45*t, y: cy - r*0.5 + r*0.5*t });
+            pts.push({ x: cx - r * 0.45 * t, y: cy - r * 0.5 + r * 0.5 * t });
+            pts.push({ x: cx + r * 0.45 * t, y: cy - r * 0.5 + r * 0.5 * t });
           }
           return pts;
         }
@@ -445,10 +543,10 @@
         meaningTH: "ความสมบูรณ์ • รวมเป็นหนึ่ง",
         draw: (cx, cy, r) => {
           const pts = [];
-          for (let a = 0; a <= Math.PI*2; a += 0.13)
-            pts.push({ x: cx + r*0.75*Math.cos(a), y: cy + r*0.75*Math.sin(a) });
-          for (let a = 0; a <= Math.PI*2; a += 0.3)
-            pts.push({ x: cx + r*0.15*Math.cos(a), y: cy + r*0.15*Math.sin(a) });
+          for (let a = 0; a <= Math.PI * 2; a += 0.13)
+            pts.push({ x: cx + r * 0.75 * Math.cos(a), y: cy + r * 0.75 * Math.sin(a) });
+          for (let a = 0; a <= Math.PI * 2; a += 0.3)
+            pts.push({ x: cx + r * 0.15 * Math.cos(a), y: cy + r * 0.15 * Math.sin(a) });
           return pts;
         }
       },
@@ -458,12 +556,12 @@
         meaningTH: "สันติภาพ • ความสงบ",
         draw: (cx, cy, r) => {
           const pts = [];
-          for (let a = 0; a <= Math.PI*2; a += 0.18)
-            pts.push({ x: cx + r*0.75*Math.cos(a), y: cy + r*0.75*Math.sin(a) });
-          for (let y = -r*0.75; y <= r*0.75; y += r*0.1) pts.push({ x: cx, y: cy + y });
+          for (let a = 0; a <= Math.PI * 2; a += 0.18)
+            pts.push({ x: cx + r * 0.75 * Math.cos(a), y: cy + r * 0.75 * Math.sin(a) });
+          for (let y = -r * 0.75; y <= r * 0.75; y += r * 0.1) pts.push({ x: cx, y: cy + y });
           for (let t = 0; t <= 1; t += 0.12) {
-            pts.push({ x: cx - r*0.75*0.7*t, y: cy + r*0.75*0.7*t });
-            pts.push({ x: cx + r*0.75*0.7*t, y: cy + r*0.75*0.7*t });
+            pts.push({ x: cx - r * 0.75 * 0.7 * t, y: cy + r * 0.75 * 0.7 * t });
+            pts.push({ x: cx + r * 0.75 * 0.7 * t, y: cy + r * 0.75 * 0.7 * t });
           }
           return pts;
         }
@@ -471,14 +569,14 @@
     ];
 
     // ============================================================
-    // SETUP
+    // VISUAL SETUP
     // ============================================================
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
-    const CUP_RADIUS = Math.min(canvas.width, canvas.height) * 0.40;
+    const CUP_RADIUS = Math.min(canvas.width, canvas.height) * 0.38;
     const CENTER_X = canvas.width / 2;
     const CENTER_Y = canvas.height / 2;
 
@@ -495,90 +593,70 @@
     let shakeEnergy = 0;
 
     // ============================================================
-    // PARTICLES
+    // PARTICLES (Tea Leaves & Coffee Grounds)
     // ============================================================
-    class TeaLeaf {
+    class Particle {
       constructor(type) {
         const angle = Math.random() * Math.PI * 2;
         const r = Math.sqrt(Math.random()) * CUP_RADIUS;
         this.x = CENTER_X + r * Math.cos(angle);
         this.y = CENTER_Y + r * Math.sin(angle);
-        this.type = type;
-        this.mass = (type === 'LEAF') ? (2.0 + Math.random() * 2.5) : (0.8 + Math.random());
+        this.type = type; // 'LEAF' or 'DUST'
+
+        // Physics
+        this.mass = (type === 'LEAF') ? (2.0 + Math.random() * 3.0) : (0.5 + Math.random());
         this.vx = 0; this.vy = 0;
-        this.friction = 0.93;
-        this.rotation = Math.random();
-        this.rotationSpeed = 0;
-        this.targetX = null; this.targetY = null;
-        this.hasTarget = false;
+        this.friction = 0.92;
+        this.rotation = Math.random() * Math.PI;
 
-        // per-particle noise so they don't all move as one blob
-        this.noiseOffsetX = (Math.random() - 0.5) * 0.8;
-        this.noiseOffsetY = (Math.random() - 0.5) * 0.8;
-        this.noisePhase = Math.random() * Math.PI * 2;
-
+        // Color Logic
         if (drinkType === 'TEA') {
-          const green = 50 + Math.random() * 40;
-          this.color = `rgba(30, ${green}, 30, ${0.85 + Math.random() * 0.15})`;
+          // Green Tea Leaves
+          const greens = ['#558B2F', '#7CB342', '#33691E'];
+          this.color = greens[Math.floor(Math.random() * greens.length)];
+          this.scale = 1;
         } else {
-          const red = 40 + Math.random() * 10;
-          this.color = `rgba(${red}, ${red - 10}, ${red - 20}, ${0.9 + Math.random() * 0.1})`;
+          // Coffee Grounds (Darker, Smaller)
+          const browns = ['#3E2723', '#4E342E', '#211613'];
+          this.color = browns[Math.floor(Math.random() * browns.length)];
+          this.mass *= 0.8; // Grounds are lighter/smaller
+          this.scale = 0.7;
         }
 
         this.vertices = [];
-        let size = (type === 'LEAF') ? this.mass * 4 : this.mass * 2;
-        let points = 4 + Math.floor(Math.random() * 4);
+        let size = this.mass * 2.5 * this.scale;
+        let points = (drinkType === 'TEA') ? (4 + Math.floor(Math.random() * 3)) : 3;
+
         for (let i = 0; i < points; i++) {
           let th = (i / points) * Math.PI * 2;
-          let rad = size * (0.6 + Math.random() * 0.4);
+          let rad = size * (0.7 + Math.random() * 0.4);
           this.vertices.push({ x: Math.cos(th) * rad, y: Math.sin(th) * rad });
         }
+
+        this.targetX = null; this.targetY = null;
+        this.hasTarget = false;
+        this.noisePhase = Math.random() * 100;
       }
 
       update(inputLow) {
         if (state !== 'SHAKE') return;
+        this.noisePhase += 0.05;
 
-        this.noisePhase += 0.04;
-
-        // Pull toward target when settling
         if (this.hasTarget && symbolFormProgress > 0) {
           const pull = symbolFormProgress * 0.08;
           this.vx += (this.targetX - this.x) * pull;
           this.vy += (this.targetY - this.y) * pull;
         }
 
-        let currentFriction = inputLow ? 0.82 : this.friction;
+        const noiseX = inputLow ? 0 : Math.cos(this.noisePhase) * 0.5;
+        const noiseY = inputLow ? 0 : Math.sin(this.noisePhase) * 0.5;
 
-        // Per-particle variation: each leaf reacts slightly differently
-        const personalScale = 0.6 + this.mass * 0.25;
-        const noiseX = inputLow ? 0 : Math.sin(this.noisePhase + this.noiseOffsetX * 5) * 0.4;
-        const noiseY = inputLow ? 0 : Math.cos(this.noisePhase * 0.7 + this.noiseOffsetY * 5) * 0.4;
-
-        this.vx -= ((accX + noiseX) * 1.8 * personalScale) / this.mass;
-        this.vy -= ((accY + noiseY) * 1.8 * personalScale) / this.mass;
-        this.vx += tiltX * 0.05;
-        this.vy += tiltY * 0.05;
-        this.vx *= currentFriction;
-        this.vy *= currentFriction;
-
-        // Repulsion only while actively shaking — stops when input is low so particles can settle
-        if (!inputLow) {
-          const repulseRadius = 14;
-          const repulseForce = 0.35;
-          for (let i = 0; i < particles.length; i += 6) {
-            const other = particles[i];
-            if (other === this) continue;
-            const rx = this.x - other.x;
-            const ry = this.y - other.y;
-            const d2 = rx * rx + ry * ry;
-            if (d2 < repulseRadius * repulseRadius && d2 > 0.01) {
-              const d = Math.sqrt(d2);
-              const f = (repulseRadius - d) / repulseRadius * repulseForce;
-              this.vx += (rx / d) * f;
-              this.vy += (ry / d) * f;
-            }
-          }
-        }
+        this.vx -= (accX + noiseX) * 1.5 / this.mass;
+        this.vy -= (accY + noiseY) * 1.5 / this.mass;
+        this.vx += tiltX * 0.08;
+        this.vy += tiltY * 0.08;
+        this.vx *= this.friction;
+        this.vy *= this.friction;
 
         this.x += this.vx;
         this.y += this.vy;
@@ -586,25 +664,27 @@
         const dx = this.x - CENTER_X;
         const dy = this.y - CENTER_Y;
         const dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist > CUP_RADIUS) {
+
+        if (dist > CUP_RADIUS * 0.9) {
           let ang = Math.atan2(dy, dx);
-          this.x = CENTER_X + Math.cos(ang) * CUP_RADIUS;
-          this.y = CENTER_Y + Math.sin(ang) * CUP_RADIUS;
-          this.vx *= -0.2;
-          this.vy *= -0.2;
+          this.x = CENTER_X + Math.cos(ang) * CUP_RADIUS * 0.9;
+          this.y = CENTER_Y + Math.sin(ang) * CUP_RADIUS * 0.9;
+          this.vx *= -0.3;
+          this.vy *= -0.3;
         }
       }
 
       draw() {
         let alpha = 1;
         if (state === 'BREW') alpha = 0.1;
-        if (state === 'DRINK') alpha = 1 - liquidOpacity;
+        if (state === 'DRINK') alpha = 1 - (liquidOpacity * 0.95); // Fade more in drink phase
 
         ctx.save();
         ctx.globalAlpha = alpha;
         ctx.translate(this.x, this.y);
         ctx.rotate(this.rotation);
         ctx.fillStyle = this.color;
+
         ctx.beginPath();
         ctx.moveTo(this.vertices[0].x, this.vertices[0].y);
         for (let i = 1; i < this.vertices.length; i++) ctx.lineTo(this.vertices[i].x, this.vertices[i].y);
@@ -616,96 +696,42 @@
 
     class Steam {
       constructor() {
-        this.x = CENTER_X + (Math.random() - 0.5) * CUP_RADIUS;
-        this.y = CENTER_Y + (Math.random() - 0.5) * CUP_RADIUS;
-        this.vx = (Math.random() - 0.5) * 0.3;
+        this.x = CENTER_X + (Math.random() - 0.5) * CUP_RADIUS * 0.8;
+        this.y = CENTER_Y + (Math.random() - 0.5) * CUP_RADIUS * 0.8;
+        this.vx = (Math.random() - 0.5) * 0.2;
         this.vy = -0.5 - Math.random() * 0.5;
-        this.size = 5 + Math.random() * 15;
-        this.life = 150;
+        this.size = 10 + Math.random() * 20;
+        this.life = 100;
+        this.maxLife = 100;
       }
-      update() { this.x += this.vx; this.y += this.vy; this.size += 0.15; this.life -= 1; }
+      update() { this.x += this.vx; this.y += this.vy; this.size += 0.1; this.life--; }
       draw() {
         ctx.save();
-        ctx.globalAlpha = (this.life / 150) * 0.2;
+        ctx.globalAlpha = (this.life / this.maxLife) * 0.15;
         ctx.fillStyle = "#fff";
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.filter = "blur(8px)";
         ctx.fill();
         ctx.restore();
       }
     }
 
     // ============================================================
-    // SYMBOL MATCHING — หัวใจของระบบใหม่
-    // วิเคราะห์ตำแหน่ง particle จริงๆ แล้วหา symbol ที่ match มากที่สุด
+    // MATCHING LOGIC
     // ============================================================
-
-    /**
-     * คำนวณ "feature vector" ของกลุ่ม particle:
-     * แบ่ง cup เป็น grid และนับความหนาแน่นในแต่ละเซลล์
-     */
     function computeDensityGrid(pts, gridSize = 8) {
       const grid = new Float32Array(gridSize * gridSize);
       for (const p of pts) {
-        // normalize to [-1, 1]
         const nx = (p.x - CENTER_X) / CUP_RADIUS;
         const ny = (p.y - CENTER_Y) / CUP_RADIUS;
         const gx = Math.floor((nx + 1) / 2 * gridSize);
         const gy = Math.floor((ny + 1) / 2 * gridSize);
-        if (gx >= 0 && gx < gridSize && gy >= 0 && gy < gridSize) {
-          grid[gy * gridSize + gx]++;
-        }
+        if (gx >= 0 && gx < gridSize && gy >= 0 && gy < gridSize) grid[gy * gridSize + gx]++;
       }
-      // normalize
       const max = Math.max(...grid, 1);
       for (let i = 0; i < grid.length; i++) grid[i] /= max;
       return grid;
-    }
-
-    /**
-     * คำนวณ feature vector ของ symbol (จาก draw points)
-     * เพื่อเปรียบเทียบกับ particle pattern
-     */
-    function computeSymbolGrid(symbol, gridSize = 8) {
-      const rawPts = symbol.draw(CENTER_X, CENTER_Y, CUP_RADIUS * 0.75);
-      return computeDensityGrid(rawPts, gridSize);
-    }
-
-    /**
-     * หา symbol ที่ particle pattern ใกล้เคียงที่สุด
-     * ใช้ cosine similarity + spatial moment matching
-     */
-    function findBestMatchingSymbol() {
-      const particlePts = particles.map(p => ({ x: p.x, y: p.y }));
-      const particleGrid = computeDensityGrid(particlePts);
-
-      // คำนวณ spatial moments ของ particles
-      const particleMoments = computeSpatialMoments(particlePts);
-
-      let bestSymbol = null;
-      let bestScore = -Infinity;
-
-      for (const sym of SYMBOLS) {
-        const symGrid = computeSymbolGrid(sym);
-        const symPts = sym.draw(CENTER_X, CENTER_Y, CUP_RADIUS * 0.75);
-        const symMoments = computeSpatialMoments(symPts);
-
-        // Cosine similarity ของ density grid
-        const cosSim = cosineSimilarity(particleGrid, symGrid);
-
-        // Moment similarity
-        const momentSim = momentSimilarity(particleMoments, symMoments);
-
-        // Weighted score
-        const score = cosSim * 0.6 + momentSim * 0.4;
-
-        if (score > bestScore) {
-          bestScore = score;
-          bestSymbol = sym;
-        }
-      }
-
-      return { symbol: bestSymbol, confidence: bestScore };
     }
 
     function cosineSimilarity(a, b) {
@@ -719,197 +745,193 @@
       return dot / (Math.sqrt(normA) * Math.sqrt(normB));
     }
 
-    /**
-     * คำนวณ spatial moments: centroid, variance, skewness ของ x,y
-     */
-    function computeSpatialMoments(pts) {
-      if (pts.length === 0) return { cx: 0, cy: 0, vx: 0, vy: 0, sx: 0, sy: 0, radialVar: 0 };
+    function findBestMatchingSymbol() {
+      const particlePts = particles.map(p => ({ x: p.x, y: p.y }));
+      const particleGrid = computeDensityGrid(particlePts);
+      let bestSymbol = SYMBOLS[0], bestScore = -Infinity;
 
-      const nx = pts.map(p => (p.x - CENTER_X) / CUP_RADIUS);
-      const ny = pts.map(p => (p.y - CENTER_Y) / CUP_RADIUS);
-      const n = pts.length;
-
-      const cx = nx.reduce((s, v) => s + v, 0) / n;
-      const cy = ny.reduce((s, v) => s + v, 0) / n;
-
-      const vx = nx.reduce((s, v) => s + (v - cx)**2, 0) / n;
-      const vy = ny.reduce((s, v) => s + (v - cy)**2, 0) / n;
-
-      const sx = vx > 0 ? nx.reduce((s, v) => s + (v - cx)**3, 0) / n / vx**1.5 : 0;
-      const sy = vy > 0 ? ny.reduce((s, v) => s + (v - cy)**3, 0) / n / vy**1.5 : 0;
-
-      // radial distribution variance (วัดว่ากระจายออกขอบหรือรวมกลาง)
-      const radials = pts.map(p => Math.sqrt((p.x - CENTER_X)**2 + (p.y - CENTER_Y)**2) / CUP_RADIUS);
-      const meanR = radials.reduce((s, v) => s + v, 0) / n;
-      const radialVar = radials.reduce((s, v) => s + (v - meanR)**2, 0) / n;
-
-      return { cx, cy, vx, vy, sx, sy, radialVar };
-    }
-
-    function momentSimilarity(a, b) {
-      const keys = ['cx', 'cy', 'vx', 'vy', 'radialVar'];
-      let sim = 0;
-      for (const k of keys) {
-        const diff = Math.abs(a[k] - b[k]);
-        sim += Math.exp(-diff * 3); // Gaussian similarity
+      for (const sym of SYMBOLS) {
+        const symPts = sym.draw(CENTER_X, CENTER_Y, CUP_RADIUS * 0.7);
+        const symGrid = computeDensityGrid(symPts);
+        const score = cosineSimilarity(particleGrid, symGrid);
+        if (score > bestScore) { bestScore = score; bestSymbol = sym; }
       }
-      return sim / keys.length;
+      return { symbol: bestSymbol, confidence: bestScore };
     }
 
-    // ============================================================
-    // ASSIGN TARGETS หลังจาก match symbol แล้ว
-    // ============================================================
     function assignTargetsToSymbol(symbol) {
       chosenSymbol = symbol;
-      const rawPts = symbol.draw(CENTER_X, CENTER_Y, CUP_RADIUS * 0.75);
-
+      const rawPts = symbol.draw(CENTER_X, CENTER_Y, CUP_RADIUS * 0.7);
       particles.forEach((p, i) => {
         const tp = rawPts[i % rawPts.length];
-        p.targetX = tp.x + (Math.random() - 0.5) * 18;
-        p.targetY = tp.y + (Math.random() - 0.5) * 18;
+        p.targetX = tp.x + (Math.random() - 0.5) * 20;
+        p.targetY = tp.y + (Math.random() - 0.5) * 20;
         p.hasTarget = true;
       });
     }
 
     // ============================================================
-    // GAME LOOP
+    // DRAW LOOP
     // ============================================================
     function loop() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+      // 1. Saucer
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(CENTER_X, CENTER_Y, CUP_RADIUS + 30, 0, Math.PI * 2);
+      ctx.fillStyle = "#FFFBF0";
+      ctx.shadowBlur = 15; ctx.shadowColor = "rgba(0,0,0,0.1)";
+      ctx.fill();
+      ctx.strokeStyle = "#D4AF37"; ctx.lineWidth = 2; ctx.stroke();
+      ctx.restore();
+
+      // 2. Cup Interior
       ctx.save();
       ctx.beginPath();
       ctx.arc(CENTER_X, CENTER_Y, CUP_RADIUS, 0, Math.PI * 2);
-      let grad = ctx.createRadialGradient(CENTER_X, CENTER_Y, 0, CENTER_X, CENTER_Y, CUP_RADIUS);
-      grad.addColorStop(0, '#ffffff');
-      grad.addColorStop(0.8, '#f4f1ea');
-      grad.addColorStop(1, '#e0d8c0');
-      ctx.fillStyle = grad; ctx.fill();
+      let cupGrad = ctx.createRadialGradient(CENTER_X, CENTER_Y, 0, CENTER_X, CENTER_Y, CUP_RADIUS);
+      cupGrad.addColorStop(0, '#FFFFFF');
+      cupGrad.addColorStop(1, '#E0E0E0');
+      ctx.fillStyle = cupGrad; ctx.fill();
       ctx.clip();
 
+      // 3. Particles
       let isLow = checkSettled();
       particles.forEach(p => {
         if (state === 'SHAKE') p.update(isLow);
         p.draw();
       });
 
+      // 4. Liquid
       if (liquidOpacity > 0) {
-        if (drinkType === 'TEA') ctx.fillStyle = `rgba(100, 130, 50, ${liquidOpacity * 0.95})`;
-        else ctx.fillStyle = `rgba(40, 20, 10, ${liquidOpacity * 0.95})`;
+        let teaGrad = ctx.createRadialGradient(CENTER_X - 20, CENTER_Y - 20, 10, CENTER_X, CENTER_Y, CUP_RADIUS);
+        if (drinkType === 'TEA') {
+          // Green Tea (Clear Green)
+          teaGrad.addColorStop(0, `rgba(160, 200, 100, ${liquidOpacity * 0.92})`);
+          teaGrad.addColorStop(1, `rgba(80, 120, 40, ${liquidOpacity * 0.95})`);
+        } else {
+          // Coffee (Dark Roast)
+          teaGrad.addColorStop(0, `rgba(80, 50, 40, ${liquidOpacity * 0.95})`);
+          teaGrad.addColorStop(1, `rgba(30, 15, 10, ${liquidOpacity * 0.98})`);
+        }
+        ctx.fillStyle = teaGrad;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = `rgba(255,255,255, ${liquidOpacity * 0.1})`;
-        ctx.beginPath();
-        ctx.arc(CENTER_X - CUP_RADIUS*0.3, CENTER_Y - CUP_RADIUS*0.3, CUP_RADIUS*0.1, 0, Math.PI*2);
-        ctx.fill();
       }
 
       steamParticles.forEach((s, i) => { s.update(); s.draw(); if (s.life <= 0) steamParticles.splice(i, 1); });
       ctx.restore();
 
-      ctx.strokeStyle = '#c5a059'; ctx.lineWidth = 12;
-      ctx.beginPath(); ctx.arc(CENTER_X, CENTER_Y, CUP_RADIUS, 0, Math.PI * 2); ctx.stroke();
-      ctx.strokeStyle = 'rgba(0,0,0,0.1)'; ctx.lineWidth = 2;
-      ctx.beginPath(); ctx.arc(CENTER_X, CENTER_Y, CUP_RADIUS - 6, 0, Math.PI * 2); ctx.stroke();
+      // 5. Cup Rim
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(CENTER_X, CENTER_Y, CUP_RADIUS, 0, Math.PI * 2);
+      ctx.lineWidth = 6; ctx.strokeStyle = "#D4AF37"; ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(CENTER_X, CENTER_Y, CUP_RADIUS - 8, 0, Math.PI * 2);
+      ctx.lineWidth = 1; ctx.strokeStyle = "rgba(212, 175, 55, 0.5)"; ctx.stroke();
+      ctx.restore();
 
       requestAnimationFrame(loop);
     }
 
     // ============================================================
-    // LOGIC
-    // ============================================================
-    // ============================================================
-    // LOGIC
+    // LOGIC & DEBUG
     // ============================================================
     window.selectDrink = async (type) => {
       drinkType = type;
-
       if (type === 'TEA') {
         document.getElementById('drink-icon').innerText = '🍵';
-        document.getElementById('drink-text').innerText = 'ดื่มชา';
       } else {
         document.getElementById('drink-icon').innerText = '☕';
-        document.getElementById('drink-text').innerText = 'ดื่มกาแฟคั่ว';
       }
 
       if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
-        try {
-          const permission = await DeviceOrientationEvent.requestPermission();
-          if (permission !== 'granted') {
-            alert('ต้องอนุญาตให้ใช้เซนเซอร์มือถือถึงจะเขย่าแก้วได้นะครับ!');
-          }
-        } catch (error) {
-          console.error("Sensor permission error:", error);
-        }
+        try { await DeviceOrientationEvent.requestPermission(); } catch (e) { }
       }
 
-      document.getElementById('screen-select').style.display = 'none';
-      document.getElementById('screen-brew').style.display = 'block';
-      state = 'BREW';
-      initParticles();
+      document.getElementById('screen-select').style.opacity = '0';
+      setTimeout(() => {
+        document.getElementById('screen-select').style.display = 'none';
+        document.getElementById('screen-brew').style.display = 'block';
+        state = 'BREW';
+        initParticles();
+      }, 400);
     };
 
     function initParticles() {
       particles = [];
-      for (let i = 0; i < 800; i++) {
+      let count = (drinkType === 'TEA') ? 600 : 800; // Coffee has more fine grains
+      for (let i = 0; i < count; i++) {
         let t = Math.random() > 0.6 ? 'LEAF' : 'DUST';
-        particles.push(new TeaLeaf(t));
+        particles.push(new Particle(t));
       }
       loop();
     }
 
+    // --- BREW LOGIC ---
     const brewBtn = document.getElementById('brew-btn');
-    let brewInterval;
+    const progressCircle = document.querySelector('.progress-ring__circle');
+    const circumference = 2 * Math.PI * 60;
+    progressCircle.style.strokeDasharray = `${circumference} ${circumference}`;
+    progressCircle.style.strokeDashoffset = circumference;
 
-    const startBrewAction = (e) => {
+    let brewInterval;
+    const startBrew = (e) => {
       if (e) e.preventDefault();
       if (liquidLevel >= 100) return;
+      brewBtn.classList.add('active');
       try { audioPour.play(); } catch (e) { }
+
       brewInterval = setInterval(() => {
         if (liquidLevel < 100) {
-          liquidLevel += 1;
+          liquidLevel += 1.5;
           liquidOpacity = liquidLevel / 100;
-          brewBtn.innerText = `${Math.floor(liquidLevel)}%`;
-          if (Math.random() > 0.5) steamParticles.push(new Steam());
+          const offset = circumference - (liquidLevel / 100) * circumference;
+          progressCircle.style.strokeDashoffset = offset;
+          if (Math.random() > 0.6) steamParticles.push(new Steam());
         } else { finishBrew(); }
       }, 30);
     };
 
-    const stopBrewAction = () => {
+    const stopBrew = () => {
       clearInterval(brewInterval);
-      audioPour.pause(); audioPour.currentTime = 0;
+      brewBtn.classList.remove('active');
+      audioPour.pause();
     };
-
-    brewBtn.addEventListener('touchstart', startBrewAction);
-    brewBtn.addEventListener('mousedown', startBrewAction);
-    brewBtn.addEventListener('touchend', stopBrewAction);
-    brewBtn.addEventListener('mouseup', stopBrewAction);
+    brewBtn.addEventListener('touchstart', startBrew);
+    brewBtn.addEventListener('mousedown', startBrew);
+    brewBtn.addEventListener('touchend', stopBrew);
+    brewBtn.addEventListener('mouseup', stopBrew);
 
     function finishBrew() {
-      stopBrewAction();
+      stopBrew();
       document.getElementById('screen-brew').style.display = 'none';
       document.getElementById('screen-drink').style.display = 'block';
       state = 'DRINK';
       window.addEventListener('deviceorientation', handleDrinkTilt);
     }
 
+    // --- DRINK LOGIC ---
     function handleDrinkTilt(event) {
       if (state !== 'DRINK') return;
-      const tilt = event.beta;
-      
-      // เอียงนิดเดียว หรือยกซด ก็ถือว่าดื่มแล้ว (ดื่มง่ายขึ้น)
-      if (tilt > 75 && liquidLevel > 0) {
-        liquidLevel -= 1; 
+      if (event.beta > 60 && liquidLevel > 0) {
+        liquidLevel -= 2;
         liquidOpacity = liquidLevel / 100;
         if (liquidLevel <= 0) finishDrink();
       }
     }
 
+    // *** RESTORED FUNCTION: debugDrink ***
     window.debugDrink = () => {
-      let drinkInt = setInterval(() => {
-        liquidLevel -= 5;
+      let iv = setInterval(() => {
+        liquidLevel -= 2;
         liquidOpacity = liquidLevel / 100;
-        if (liquidLevel <= 0) { clearInterval(drinkInt); finishDrink(); }
-      }, 20);
+        if (liquidLevel <= 0) {
+          clearInterval(iv);
+          finishDrink();
+        }
+      }, 30);
     };
 
     function finishDrink() {
@@ -917,72 +939,43 @@
       document.getElementById('screen-drink').style.display = 'none';
       document.getElementById('screen-shake').style.display = 'block';
       state = 'SHAKE';
-
-      // แสดง shake meter
       document.getElementById('shake-meter').style.display = 'block';
       document.getElementById('match-hint').style.display = 'block';
-
       window.addEventListener('devicemotion', handleMotion);
       window.addEventListener('deviceorientation', handleOrientation);
     }
 
-    // ============================================================
-    // SHAKE SENSORS
-    // ============================================================
-    let accX = 0, accY = 0, tiltX = 0, tiltY = 0;
-    let prevAccX = 0, prevAccY = 0;
-
+    // --- SHAKE LOGIC ---
+    let accX = 0, accY = 0, tiltX = 0, tiltY = 0, prevAccX = 0, prevAccY = 0;
     function handleMotion(e) {
       let acc = e.acceleration || e.accelerationIncludingGravity;
       if (acc) {
-        let rx = acc.x || 0; let ry = acc.y || 0;
-        accX = (Math.abs(rx) < 0.5) ? 0 : rx;
-        accY = (Math.abs(ry) < 0.5) ? 0 : ry;
+        accX = (Math.abs(acc.x) < 0.5) ? 0 : acc.x;
+        accY = (Math.abs(acc.y) < 0.5) ? 0 : acc.y;
         shakeEnergy = Math.abs(accX - prevAccX) + Math.abs(accY - prevAccY);
         prevAccX = accX; prevAccY = accY;
       }
     }
+    function handleOrientation(e) { tiltX = e.gamma || 0; tiltY = e.beta || 0; }
 
-    function handleOrientation(e) {
-      tiltX = e.gamma || 0;
-      tiltY = e.beta || 0;
-    }
-
+    // *** RESTORED FUNCTION: debugShake ***
     window.debugShake = () => {
-      // Give each particle an initial random kick to break the clump
-      particles.forEach(p => {
-        const angle = Math.random() * Math.PI * 2;
-        const force = 8 + Math.random() * 10;
-        p.vx += Math.cos(angle) * force;
-        p.vy += Math.sin(angle) * force;
-      });
-
       let t = 0;
       const iv = setInterval(() => {
-        // Oscillating shake — alternating directions like real hand shake
-        const phase = t * 0.4;
-        accX = Math.sin(phase) * 10 + (Math.random() - 0.5) * 6;
-        accY = Math.cos(phase * 1.3) * 10 + (Math.random() - 0.5) * 6;
-        shakeEnergy = 10;
-        t++;
-        if (t > 40) { clearInterval(iv); accX = 0; accY = 0; shakeEnergy = 0; }
-      }, 40);
+        accX = Math.sin(t) * 15;
+        accY = Math.cos(t) * 15;
+        shakeEnergy = 20;
+        t += 0.5;
+        if (t > 15) { // Shake for a bit then stop
+          clearInterval(iv);
+          accX = 0; accY = 0; shakeEnergy = 0;
+        }
+      }, 50);
     };
 
-    // ============================================================
-    // SETTLE / SYMBOL MATCHING LOGIC (ใหม่)
-    // ============================================================
-    let stillFrames = 0;
-    const revealBtn = document.getElementById('reveal-btn');
-
-    let hasShaken = false;
-    let totalShakeEnergy = 0;
+    let stillFrames = 0, totalShakeEnergy = 0, hasShaken = false, matchingDone = false;
     const SHAKE_THRESHOLD = 80;
-
-    // State สำหรับการ matching
-    let matchingDone = false;
-    let lastMatchTime = 0;
-    const MATCH_COOLDOWN = 500; // ms ระหว่างการ re-match
+    const revealBtn = document.getElementById('reveal-btn');
 
     function checkSettled() {
       if (state !== 'SHAKE') return true;
@@ -991,65 +984,38 @@
 
       if (!isInputLow) {
         totalShakeEnergy += shakeEnergy;
-        if (totalShakeEnergy >= SHAKE_THRESHOLD) {
-          hasShaken = true;
-          matchingDone = false; // reset matching เพื่อให้ match ใหม่เมื่อหยุด
-        }
-        // อัปเดต shake meter
+        if (totalShakeEnergy >= SHAKE_THRESHOLD) { hasShaken = true; matchingDone = false; }
         const pct = Math.min(totalShakeEnergy / SHAKE_THRESHOLD * 100, 100);
         document.getElementById('shake-meter-fill').style.width = pct + '%';
       }
 
-      let vel = 0;
-      for (let i = 0; i < particles.length; i += 10) vel += Math.abs(particles[i].vx) + Math.abs(particles[i].vy);
-      vel /= (particles.length / 10);
-
-      if (hasShaken && isInputLow && vel < 1.5) {
+      if (hasShaken && isInputLow) {
         stillFrames++;
-
-        // ===== MATCHING: วิเคราะห์ตำแหน่ง particle จริงและหา symbol ที่ใกล้เคียง =====
-        if (!matchingDone && stillFrames === 60) {
-          const now = Date.now();
-          if (now - lastMatchTime > MATCH_COOLDOWN) {
-            lastMatchTime = now;
-            const { symbol, confidence } = findBestMatchingSymbol();
-            assignTargetsToSymbol(symbol);
-            matchingDone = true;
-
-            // แสดง hint
-            const hint = document.getElementById('match-hint');
-            hint.textContent = `✨ เห็น ${symbol.nameTH} อยู่...`;
-          }
+        if (!matchingDone && stillFrames === 40) {
+          const { symbol } = findBestMatchingSymbol();
+          assignTargetsToSymbol(symbol);
+          matchingDone = true;
+          document.getElementById('match-hint').innerHTML = `✨ รูปทรงคล้าย... <strong>${symbol.nameTH}</strong>`;
         }
-
-        if (symbolFormProgress < 1 && matchingDone)
-          symbolFormProgress = Math.min(1, symbolFormProgress + 0.004);
-
+        if (symbolFormProgress < 1 && matchingDone) symbolFormProgress += 0.01;
       } else {
         if (!hasShaken || !isInputLow) {
           stillFrames = 0;
           revealBtn.style.display = 'none';
           if (!isInputLow) {
-            // user เขย่าใหม่ — reset matching เพื่อ match อีกครั้งเมื่อหยุด
             matchingDone = false;
-            symbolFormProgress = Math.max(0, symbolFormProgress - 0.02);
-            // ล้าง target เก่า
-            particles.forEach(p => { p.hasTarget = false; });
-            // ซ่อน hint ชั่วคราว
-            document.getElementById('match-hint').textContent = 'กำลังอ่านรูปร่าง...';
+            symbolFormProgress = Math.max(0, symbolFormProgress - 0.05);
+            particles.forEach(p => p.hasTarget = false);
+            document.getElementById('match-hint').innerText = "เขย่าเบาๆ...";
           }
         }
-        if (hasShaken && !isInputLow)
-          symbolFormProgress = Math.max(0, symbolFormProgress - 0.02);
       }
 
-      if (hasShaken && stillFrames > 30) revealBtn.style.display = 'block';
+      if (hasShaken && stillFrames > 60) revealBtn.style.display = 'inline-block';
       return isInputLow;
     }
 
-    // ============================================================
-    // REVEAL
-    // ============================================================
+    // --- REVEAL (BACKEND CONNECTED) ---
     revealBtn.addEventListener('click', async () => {
       state = 'REVEAL';
       document.getElementById('ui-layer').style.display = 'none';
@@ -1110,7 +1076,7 @@
         }
       }
     });
-
   </script>
 </body>
+
 </html>
